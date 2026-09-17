@@ -168,7 +168,7 @@
             border: 1px solid #b91c1c;
         }
 
-        /* Estilos para la sección multimedia / video demo */
+        /* Contenedor del Reproductor de Video Funcional */
         .video-container {
             position: relative;
             width: 100%;
@@ -180,37 +180,13 @@
             border: 1px solid var(--card-border);
         }
 
-        .video-container iframe, .video-container video {
+        .video-container video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: none;
-        }
-
-        .video-placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(45deg, #1e293b, #0f172a);
-            color: var(--text-muted);
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .video-placeholder svg {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
-            fill: var(--accent-blue);
+            object-fit: cover;
         }
 
         footer {
@@ -228,7 +204,7 @@
 
     <header>
         <h1>⚡ OmniAgent Ops &bull; TFM Dashboard</h1>
-        <span>Estado del Sistema: Activo (To-Be)</span>
+        <span>Estrategia Híbrida: Sistema Activo + Resguardo Táctico</span>
     </header>
 
     <div class="main-container">
@@ -249,19 +225,18 @@
             <div id="statusMessage" class="status"></div>
         </div>
 
-        <!-- Columna Derecha: Sección Multimedia / Demostración en Video -->
+        <!-- Columna Derecha: Reproductor de Video de Resguardo / Demostración -->
         <div class="card">
             <h3>🎥 Demostración del Pipeline Asíncrono</h3>
             <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">
-                Visualización en tiempo real de la ejecución de agentes autónomos y enrutamiento omnicanal.
+                Resguardo audiovisual de alta disponibilidad para la defensa ante el tribunal académico.
             </p>
             <div class="video-container">
-                <!-- Puedes reemplazar el placeholder por una etiqueta <video src="tu-video.mp4" controls></video> o un iframe de YouTube -->
-                <div class="video-placeholder">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-                    <span style="font-weight: 600; color: var(--text-main);">Reproducir Demostración de Arquitectura</span>
-                    <span style="font-size: 12px; margin-top: 4px;">Demostración de Ingesta Web $\rightarrow$ n8n $\rightarrow$ OpenAI $\rightarrow$ Gmail/Sheets</span>
-                </div>
+                <!-- Nota: Cuando grabes tu video, colócalo en la misma carpeta como 'demo_tfm.mp4' -->
+                <video controls poster="">
+                    <source src="demo_tfm.mp4" type="video/mp4">
+                    Tu navegador no soporta la reproducción de video HTML5.
+                </video>
             </div>
         </div>
     </div>
@@ -286,7 +261,6 @@
             };
 
             try {
-                // Endpoint del Webhook de prueba en n8n
                 const response = await fetch('http://localhost:5678/webhook-test/soporte-ticket', {
                     method: 'POST',
                     headers: {
