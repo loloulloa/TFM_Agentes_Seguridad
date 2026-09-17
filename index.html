@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniAgent Ops - Centro de Control e Hiperautomatización</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success-bg: #065f46;
+            --success-text: #d1fae5;
+            --error-bg: #991b1b;
+            --error-text: #fee2e2;
+            --card-border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--card-border);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent-blue);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        header span {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            text-align: center;
+        }
+
+        .success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid #047857;
+        }
+
+        .error {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border: 1px solid #b91c1c;
+        }
+
+        /* Estilos para la sección multimedia / video demo */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+            height: 0;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+        }
+
+        .video-container iframe, .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #1e293b, #0f172a);
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .video-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            fill: var(--accent-blue);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            margin-top: auto;
+            background-color: var(--bg-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚡ OmniAgent Ops &bull; TFM Dashboard</h1>
+        <span>Estado del Sistema: Activo (To-Be)</span>
+    </header>
+
+    <div class="main-container">
+        <!-- Columna Izquierda: Formulario de Autoservicio conectado a n8n -->
+        <div class="card">
+            <h3>🎫 Portal de Autoservicio de Soporte</h3>
+            <form id="ticketForm">
+                <div class="form-group">
+                    <label for="correo">Correo Electrónico de Contacto</label>
+                    <input type="email" id="correo" required placeholder="usuario@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label for="mensaje">Descripción Detallada del Incidente</label>
+                    <textarea id="mensaje" rows="5" required placeholder="Describa el error técnico o situación..."></textarea>
+                </div>
+                <button type="submit" id="submitBtn">Enviar Ticket a n8n</button>
+            </form>
+            <div id="statusMessage" class="status"></div>
+        </div>
+
+        <!-- Columna Derecha: Sección Multimedia / Demostración en Video -->
+        <div class="card">
+            <h3>🎥 Demostración del Pipeline Asíncrono</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">
+                Visualización en tiempo real de la ejecución de agentes autónomos y enrutamiento omnicanal.
+            </p>
+            <div class="video-container">
+                <!-- Puedes reemplazar el placeholder por una etiqueta <video src="tu-video.mp4" controls></video> o un iframe de YouTube -->
+                <div class="video-placeholder">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                    <span style="font-weight: 600; color: var(--text-main);">Reproducir Demostración de Arquitectura</span>
+                    <span style="font-size: 12px; margin-top: 4px;">Demostración de Ingesta Web $\rightarrow$ n8n $\rightarrow$ OpenAI $\rightarrow$ Gmail/Sheets</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Trabajo Final de Máster (TFM) en Hiperautomatización de Procesos y Agentes de IA &bull; Jorge Ulloa
+    </footer>
+
+    <script>
+        document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const statusDiv = document.getElementById('statusMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            statusDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Procesando con Agente IA...';
+
+            const payload = {
+                correo: document.getElementById('correo').value,
+                mensaje: document.getElementById('mensaje').value
+            };
+
+            try {
+                // Endpoint del Webhook de prueba en n8n
+                const response = await fetch('http://localhost:5678/webhook-test/soporte-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerText = '¡Ticket procesado con éxito! Respuesta enviada por correo y auditoría registrada.';
+                    statusDiv.style.display = 'block';
+                    document.getElementById('ticketForm').reset();
+                } else {
+                    throw new Error('Error en el servidor');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerText = 'Error de conexión: Verifique que n8n esté en modo de escucha activa (Listen for test event).';
+                statusDiv.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Enviar Ticket a n8n';
+            }
+        });
+    </script>
+</body>
+</html>
