@@ -58,7 +58,7 @@
 
         .main-container {
             max-width: 1200px;
-            margin: 40px auto;
+            margin: 30px auto;
             padding: 0 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -77,31 +77,60 @@
             background-color: var(--bg-secondary);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .card h3 {
             margin-top: 0;
             font-size: 18px;
             border-bottom: 1px solid var(--card-border);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
             color: #e2e8f0;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .form-group {
+        /* Sección Informativa de Procesos y SLA */
+        .info-box {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .info-box h4 {
+            color: var(--accent-blue);
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+
+        .info-box ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
         }
 
         label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -109,10 +138,10 @@
 
         input, textarea {
             width: 100%;
-            padding: 12px 16px;
-            background-color: rgba(15, 23, 42, 0.6);
+            padding: 10px 14px;
+            background-color: rgba(15, 23, 42, 0.8);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
+            border-radius: 6px;
             color: var(--text-main);
             font-size: 14px;
             box-sizing: border-box;
@@ -127,11 +156,11 @@
 
         button {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
@@ -148,10 +177,10 @@
         }
 
         .status {
-            margin-top: 20px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
             display: none;
             text-align: center;
         }
@@ -168,16 +197,17 @@
             border: 1px solid #b91c1c;
         }
 
-        /* Contenedor del Reproductor de Video Funcional */
+        /* Contenedor del Reproductor de Video */
         .video-container {
             position: relative;
             width: 100%;
-            padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+            padding-bottom: 56.25%;
             height: 0;
             background-color: #000;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--card-border);
+            margin-top: 10px;
         }
 
         .video-container video {
@@ -191,7 +221,7 @@
 
         footer {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             font-size: 12px;
             color: var(--text-muted);
             border-top: 1px solid var(--card-border);
@@ -208,35 +238,50 @@
     </header>
 
     <div class="main-container">
-        <!-- Columna Izquierda: Formulario de Autoservicio conectado a n8n -->
+        <!-- Columna Izquierda: Formulario de Autoservicio y Guía SLA -->
         <div class="card">
-            <h3>🎫 Portal de Autoservicio de Soporte</h3>
-            <form id="ticketForm">
-                <div class="form-group">
-                    <label for="correo">Correo Electrónico de Contacto</label>
-                    <input type="email" id="correo" required placeholder="usuario@empresa.com">
+            <div>
+                <h3>🎫 Portal de Autoservicio de Soporte</h3>
+                
+                <!-- Sección Informativa Propuesta -->
+                <div class="info-box">
+                    <h4>📋 Guía de Atención y Niveles de SLA</h4>
+                    <ul>
+                        <li><strong>Proceso:</strong> Ingesta $\rightarrow$ Triaje por Agente IA $\rightarrow$ Despacho Automático.</li>
+                        <li><strong>Urgencia Crítica / Alta:</strong> Respuesta estimada en < 15 min.</li>
+                        <li><strong>Urgencia Media:</strong> Respuesta estimada en < 2 horas.</li>
+                        <li><strong>Urgencia Baja:</strong> Respuesta estimada en < 24 horas.</li>
+                    </ul>
                 </div>
-                <div class="form-group">
-                    <label for="mensaje">Descripción Detallada del Incidente</label>
-                    <textarea id="mensaje" rows="5" required placeholder="Describa el error técnico o situación..."></textarea>
-                </div>
-                <button type="submit" id="submitBtn">Enviar Ticket a n8n</button>
-            </form>
+
+                <form id="ticketForm">
+                    <div class="form-group">
+                        <label for="correo">Correo Electrónico de Contacto</label>
+                        <input type="email" id="correo" required placeholder="usuario@empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="mensaje">Descripción Detallada del Incidente</label>
+                        <textarea id="mensaje" rows="4" required placeholder="Describa el error técnico o situación..."></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn">Crear Ticket de Soporte</button>
+                </form>
+            </div>
             <div id="statusMessage" class="status"></div>
         </div>
 
-        <!-- Columna Derecha: Reproductor de Video de Resguardo / Demostración -->
+        <!-- Columna Derecha: Reproductor de Video de Resguardo -->
         <div class="card">
-            <h3>🎥 Demostración del Pipeline Asíncrono</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">
-                Resguardo audiovisual de alta disponibilidad para la defensa ante el tribunal académico.
-            </p>
-            <div class="video-container">
-                <!-- Nota: Cuando grabes tu video, colócalo en la misma carpeta como 'demo_tfm.mp4' -->
-                <video controls poster="">
-                    <source src="demo_tfm.mp4" type="video/mp4">
-                    Tu navegador no soporta la reproducción de video HTML5.
-                </video>
+            <div>
+                <h3>🎥 Demostración del Pipeline Asíncrono</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">
+                    Resguardo audiovisual de alta disponibilidad para la defensa ante el tribunal académico.
+                </p>
+                <div class="video-container">
+                    <video controls>
+                        <source src="demo_tfm.mp4" type="video/mp4">
+                        Tu navegador no soporta la reproducción de video HTML5.
+                    </video>
+                </div>
             </div>
         </div>
     </div>
@@ -271,7 +316,7 @@
 
                 if (response.ok) {
                     statusDiv.className = 'status success';
-                    statusDiv.innerText = '¡Ticket procesado con éxito! Respuesta enviada por correo y auditoría registrada.';
+                    statusDiv.innerText = '¡Ticket creado con éxito! Respuesta enviada por correo y auditoría registrada.';
                     statusDiv.style.display = 'block';
                     document.getElementById('ticketForm').reset();
                 } else {
@@ -279,11 +324,11 @@
                 }
             } catch (error) {
                 statusDiv.className = 'status error';
-                statusDiv.innerText = 'Error de conexión: Verifique que n8n esté en modo de escucha activa (Listen for test event).';
+                statusDiv.innerText = 'Error de conexión: Verifique que n8n esté en modo de escucha activa.';
                 statusDiv.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'Enviar Ticket a n8n';
+                submitBtn.innerText = 'Crear Ticket de Soporte';
             }
         });
     </script>
