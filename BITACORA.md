@@ -312,3 +312,18 @@
   - Se actualizó la expresión lógica del nodo condicional `If1` utilizando la referencia explícita `$('Code in JavaScript').item.json.criticidad` para evaluar correctamente el nivel "Alta".
   - Se verificó la ejecución completa de punta a punta desde el Webhook hasta el canal de Telegram (`Send a text message2`).
 - **Próximos pasos:** Reintegración de la lógica dinámica del LLM para el paso de clasificación y diseño de rutas para criticidades medias/bajas.
+## [2026-09-18] - Definición del Frontend de Soporte (HTML/JS Minimalista)
+- **Hito alcanzado:** Especificación técnica del formulario web minimalista para la captura y envío de tiquetes hacia el Webhook de n8n.
+- **Detalle técnico:** Se establece el uso de HTML5 nativo y Fetch API para realizar peticiones POST asíncronas en formato JSON sin dependencias externas de frameworks pesados.
+- **Próximos pasos:** Crear el código fuente base del formulario HTML y realizar la prueba de integración con el endpoint del Webhook.
+## [2026-09-21] - Consolidación del Módulo Frontend y Conectividad con n8n
+- **Hito alcanzado:** Implementación, depuración y validación exitosa del formulario web de soporte (`index.html`) y su integración con el webhook de producción en n8n.
+- **Detalle técnico:** 
+  - Se diseñó e implementó un portal web minimalista basado en HTML5 y JavaScript asíncrono (`fetch`) para la captura de tiquetes de usuarios (`correo` y `mensaje`).
+  - Se resolvió la integración de red entre el entorno local y el servidor n8n en Docker, mapeando correctamente el payload JSON hacia el nodo `Basic LLM Chain` mediante la expresión `$json.body.mensaje`.
+  - Se auditó y confirmó mediante el panel de ejecuciones de n8n el procesamiento exitoso de extremo a extremo del flujo automatizado.
+- **Próximos pasos:** Iniciar el diseño y estructuración de la lógica para criticidades menores (Medias y Bajas) en el nodo condicional `If1`.
+## [2026-09-21] - Restauración del OmniAgent Ops Dashboard Corporativo
+- **Hito alcanzado:** Reintegración formal del diseño visual avanzado en modo oscuro para la interfaz de usuario.
+- **Detalle técnico:** Se aseguró la persistencia del layout corporativo adaptado para la presentación institucional del TFM.
+- **Próximos pasos:** Configurar las rutas de criticidades Medias y Bajas en el nodo condicional de n8n.
