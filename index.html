@@ -3,334 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniAgent Ops - Centro de Control e Hiperautomatización</title>
+    <title>OmniAgent Ops • TFM Dashboard</title>
     <style>
-        :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --accent-blue: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.3);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success-bg: #065f46;
-            --success-text: #d1fae5;
-            --error-bg: #991b1b;
-            --error-text: #fee2e2;
-            --card-border: #334155;
-        }
-
-        body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        header {
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--card-border);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 20px;
-            color: var(--accent-blue);
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        header span {
-            font-size: 13px;
-            color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
-        }
-
-        .main-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        @media (max-width: 900px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .card h3 {
-            margin-top: 0;
-            font-size: 18px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-            color: #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Sección Informativa de Procesos y SLA */
-        .info-box {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .info-box h4 {
-            color: var(--accent-blue);
-            margin: 0 0 8px 0;
-            font-size: 14px;
-        }
-
-        .info-box ul {
-            margin: 0;
-            padding-left: 18px;
-        }
-
-        .info-box li {
-            margin-bottom: 4px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px 14px;
-            background-color: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            color: var(--text-main);
-            font-size: 14px;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-
-        button:hover {
-            opacity: 0.95;
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            display: none;
-            text-align: center;
-        }
-
-        .success {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-            border: 1px solid #047857;
-        }
-
-        .error {
-            background-color: var(--error-bg);
-            color: var(--error-text);
-            border: 1px solid #b91c1c;
-        }
-
-        /* Contenedor del Reproductor de Video */
-        .video-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%;
-            height: 0;
-            background-color: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--card-border);
-            margin-top: 10px;
-        }
-
-        .video-container video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        footer {
-            text-align: center;
-            padding: 15px;
-            font-size: 12px;
-            color: var(--text-muted);
-            border-top: 1px solid var(--card-border);
-            margin-top: auto;
-            background-color: var(--bg-secondary);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { width: 100%; max-width: 1200px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
+        h1 { color: #38bdf8; font-size: 20px; margin: 0; display: flex; align-items: center; gap: 10px; }
+        .main-container { display: flex; flex-wrap: wrap; gap: 25px; width: 100%; max-width: 1200px; justify-content: center; }
+        .card { background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); flex: 1; min-width: 350px; max-width: 550px; border: 1px solid #334155; }
+        h2 { color: #f1f5f9; margin-top: 0; margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        .sla-box { background: #0f172a; padding: 15px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 20px; font-size: 13px; color: #cbd5e1; }
+        .sla-box ul { margin: 5px 0 0 20px; padding: 0; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #94a3b8; font-size: 14px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 20px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus, textarea:focus { outline: none; border-color: #38bdf8; }
+        button { background-color: #2563eb; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        button:hover { background-color: #1d4ed8; }
+        #mensajeEstado { margin-top: 15px; text-align: center; font-weight: bold; padding: 10px; border-radius: 6px; font-size: 14px; }
+        .video-container { background: #0f172a; border-radius: 8px; overflow: hidden; border: 1px solid #334155; height: 300px; display: flex; align-items: center; justify-content: center; color: #64748b; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>⚡ OmniAgent Ops &bull; TFM Dashboard</h1>
-        <span>Estrategia Híbrida: Sistema Activo + Resguardo Táctico</span>
-    </header>
+<header>
+    <h1>⚡ OmniAgent Ops • TFM Dashboard</h1>
+</header>
 
-    <div class="main-container">
-        <!-- Columna Izquierda: Formulario de Autoservicio y Guía SLA -->
-        <div class="card">
-            <div>
-                <h3>🎫 Portal de Autoservicio de Soporte</h3>
-                
-                <!-- Sección Informativa Propuesta -->
-                <div class="info-box">
-                    <h4>📋 Guía de Atención y Niveles de SLA</h4>
-                    <ul>
-                        <li><strong>Proceso:</strong> Ingesta &rarr; Triaje por Agente IA &rarr; Despacho Automático.</li>
-                        <li><strong>Urgencia Crítica / Alta:</strong> Respuesta estimada en < 15 min.</li>
-                        <li><strong>Urgencia Media:</strong> Respuesta estimada en < 2 horas.</li>
-                        <li><strong>Urgencia Baja:</strong> Respuesta estimada en < 24 horas.</li>
-                    </ul>
-                </div>
-
-                <form id="ticketForm">
-                    <div class="form-group">
-                        <label for="correo">Correo Electrónico de Contacto</label>
-                        <input type="email" id="correo" required placeholder="usuario@empresa.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="mensaje">Descripción Detallada del Incidente</label>
-                        <textarea id="mensaje" rows="4" required placeholder="Describa el error técnico o situación..."></textarea>
-                    </div>
-                    <button type="submit" id="submitBtn">Crear Ticket de Soporte</button>
-                </form>
-            </div>
-            <div id="statusMessage" class="status"></div>
+<div class="main-container">
+    <!-- Panel del Formulario -->
+    <div class="card">
+        <h2>📁 Portal de Autoservicio de Soporte</h2>
+        
+        <div class="sla-box">
+            <strong>📋 Guía de Atención y Niveles de SLA</strong>
+            <ul>
+                <li><strong>Proceso:</strong> Ingesta → Triaje por Agente IA → Despacho Automático.</li>
+                <li><strong>Urgencia Crítica / Alta:</strong> Respuesta estimada en < 15 min.</li>
+                <li><strong>Urgencia Media:</strong> Respuesta estimada en < 2 horas.</li>
+                <li><strong>Urgencia Baja:</strong> Respuesta estimada en < 24 horas.</li>
+            </ul>
         </div>
 
-        <!-- Columna Derecha: Reproductor de Video de Resguardo -->
-        <div class="card">
-            <div>
-                <h3>🎥 Demostración del Pipeline Asíncrono</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 15px;">
-                    Resguardo audiovisual de alta disponibilidad para la defensa ante el tribunal académico.
-                </p>
-                <div class="video-container">
-                    <video controls>
-                        <source src="demo_tfm.mp4" type="video/mp4">
-                        Tu navegador no soporta la reproducción de video HTML5.
-                    </video>
-                </div>
-            </div>
-        </div>
+        <form id="ticketForm">
+            <label for="correo">CORREO ELECTRÓNICO DE CONTACTO</label>
+            <input type="email" id="correo" required placeholder="usuario@empresa.com">
+
+            <label for="descripcion">DESCRIPCIÓN DETALLADA DEL INCIDENTE</label>
+            <textarea id="descripcion" rows="4" required placeholder="Describa el error técnico o situación..."></textarea>
+
+            <button type="submit" id="btnEnviar">Crear Ticket de Soporte</button>
+        </form>
+        <div id="mensajeEstado"></div>
     </div>
 
-    <footer>
-        Trabajo Final de Máster (TFM) en Hiperautomatización de Procesos y Agentes de IA &bull; Jorge Ulloa
-    </footer>
+    <!-- Panel de Demostración Audiovisual -->
+    <div class="card">
+        <h2>🎬 Demostración del Pipeline Asíncrono</h2>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">Resguardo audiovisual de alta disponibilidad para la defensa ante el tribunal académico.</p>
+        <div class="video-container">
+            <span>Espacio reservado para screencast de ejecución end-to-end (n8n + Docker + IA)</span>
+        </div>
+    </div>
+</div>
 
-    <script>
-        document.getElementById('ticketForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const statusDiv = document.getElementById('statusMessage');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            statusDiv.style.display = 'none';
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'Procesando con Agente IA...';
+<script>
+    document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const correo = document.getElementById('correo').value;
+        const mensaje = document.getElementById('descripcion').value;
+        const btnEnviar = document.getElementById('btnEnviar');
+        const mensajeEstado = document.getElementById('mensajeEstado');
 
-            const payload = {
-                correo: document.getElementById('correo').value,
-                mensaje: document.getElementById('mensaje').value
-            };
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = "Procesando con Agente IA...";
+        mensajeEstado.style.background = "transparent";
+        mensajeEstado.style.color = "#94a3b8";
+        mensajeEstado.textContent = "Analizando criticidad y enrutando...";
 
-            try {
-                const response = await fetch('http://localhost:5678/webhook-test/soporte-ticket', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    },
-                    body: JSON.stringify(payload)
-                });
+        const webhookUrl = 'http://localhost:5678/webhook/soporte-ticket';
 
-                if (response.ok) {
-                    statusDiv.className = 'status success';
-                    statusDiv.innerText = '¡Ticket creado con éxito! Respuesta enviada por correo y auditoría registrada.';
-                    statusDiv.style.display = 'block';
-                    document.getElementById('ticketForm').reset();
-                } else {
-                    throw new Error('Error en el servidor');
-                }
-            } catch (error) {
-                statusDiv.className = 'status error';
-                statusDiv.innerText = 'Error de conexión: Verifique que n8n esté en modo de escucha activa.';
-                statusDiv.style.display = 'block';
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Crear Ticket de Soporte';
-            }
-        });
-    </script>
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify({ correo, mensaje })
+            });
+
+            mensajeEstado.style.background = "#065f46";
+            mensajeEstado.style.color = "#a7f3d0";
+            mensajeEstado.textContent = "¡Ticket creado con éxito! Respuesta enviada por correo y auditoría registrada.";
+            document.getElementById('ticketForm').reset();
+        } catch (error) {
+            mensajeEstado.style.background = "#7f1d1d";
+            mensajeEstado.style.color = "#fecaca";
+            mensajeEstado.textContent = "Error crítico al conectar con el motor de n8n.";
+            console.error(error);
+        } finally {
+            btnEnviar.disabled = false;
+            btnEnviar.textContent = "Crear Ticket de Soporte";
+        }
+    });
+</script>
+
 </body>
 </html>
