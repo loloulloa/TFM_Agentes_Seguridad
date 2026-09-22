@@ -44,7 +44,6 @@
 
 <div class="main-layout">
     <div class="left-column">
-        <!-- Estado de Tiquetes -->
         <div class="card">
             <div class="card-header">
                 <span>Ticket Status</span>
@@ -55,7 +54,6 @@
             </div>
         </div>
 
-        <!-- Tiquetes por Especialista (Inbox con los 6 agentes reales) -->
         <div class="card">
             <div class="card-header">
                 <span>Carga por Especialista (Inbox)</span>
@@ -66,7 +64,6 @@
             </div>
         </div>
 
-        <!-- Tiquetes por Prioridad -->
         <div class="card">
             <div class="card-header">
                 <span>Ticket by Priority</span>
@@ -77,7 +74,6 @@
             </div>
         </div>
 
-        <!-- Tiempos de Respuesta -->
         <div class="card">
             <div class="card-header">
                 <span>Average Ticket Response Time</span>
@@ -89,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Columna Derecha: Tiquetes con Fotos -->
     <div class="right-column">
         <div class="ticket-list-card">
             <div class="card-header">
@@ -138,7 +133,6 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }
     });
 
-    // Gráfico sincronizado con los 6 Especialistas Reales
     new Chart(document.getElementById('inboxChart').getContext('2d'), {
         type: 'pie',
         data: {

@@ -50,7 +50,7 @@
     </div>
 
     <h2>📋 Trazabilidad y Asignación de Tiquetes en Tiempo Real</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Monitoreo de cargas de trabajo distribuidas entre los 6 especialistas del equipo.</p>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Monitoreo dinámico de cargas de trabajo distribuidas entre los 6 especialistas.</p>
 
     <table>
         <thead>
@@ -64,46 +64,60 @@
             </tr>
         </thead>
         <tbody id="tablaTiquetes">
-            <!-- Los tiquetes dinámicos se inyectarán aquí -->
+            <!-- Dinámico -->
         </tbody>
     </table>
 </div>
 
 <script>
-    // Cargar tiquetes almacenados o mostrar base inicial sincronizada
-    function cargarTiquetes() {
+    function renderTiquetes() {
         const tbody = document.getElementById('tablaTiquetes');
-        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [
-            { id: 'TKT-863750', diag: 'Caída masiva del servidor principal de producción', crit: 'alta', agente: 'Jorge Ulloa', fecha: '2026-09-22 06:08:21' },
-            { id: 'TKT-118371', diag: 'Intermitencia en exportación de reportes PDF', crit: 'media', agente: 'María Brenes', fecha: '2026-09-22 12:30:15' },
-            { id: 'TKT-398964', diag: 'Solicitud de cambio menor en etiqueta de campo', crit: 'baja', agente: 'Carlos Méndez', fecha: '2026-09-22 12:30:40' }
-        ];
+        
+        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes'));
+        if (!tiquetes || tiquetes.length === 0) {
+            tiquetes = [
+                { id: 'TKT-863750', diag: 'Caída masiva del servidor principal de producción', crit: 'Alta', agente: 'Jorge Ulloa', fecha: '2026-09-22 06:08:21' },
+                { id: 'TKT-118371', diag: 'Intermitencia en exportación de reportes PDF', crit: 'Media', agente: 'María Brenes', fecha: '2026-09-22 12:30:15' },
+                { id: 'TKT-398964', diag: 'Solicitud de cambio menor en etiqueta de campo', crit: 'Baja', agente: 'Carlos Méndez', fecha: '2026-09-22 12:30:40' }
+            ];
+            localStorage.setItem('tfm_tiquetes', JSON.stringify(tiquetes));
+        }
 
         tbody.innerHTML = '';
         tiquetes.forEach(t => {
-            let badgeClass = t.crit.toLowerCase() === 'alta' ? 'alta' : (t.crit.toLowerCase() === 'media' ? 'media' : 'baja');
+            let critLower = (t.crit || 'baja').toLowerCase();
+            let badgeClass = critLower.includes('alta') ? 'alta' : (critLower.includes('media') ? 'media' : 'baja');
+            let critText = critLower.includes('alta') ? 'Alta' : (critLower.includes('media') ? 'Media' : 'Baja');
+
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${t.id}</strong></td>
                 <td>${t.diag}</td>
-                <td><span class="badge ${badgeClass}">${t.crit.charAt(0).toUpperCase() + t.crit.slice(1)}</span></td>
+                <td><span class="badge ${badgeClass}">${critText}</span></td>
                 <td>${t.agente}</td>
                 <td>${t.fecha}</td>
-                <td><button class="btn-accion" onclick="cerrarYNotificar('${t.id}')">Cerrar y Enviar Correo</button></td>
+                <td><button class="btn-accion" onclick="cerrarTiquete('${t.id}')">Cerrar y Enviar Correo</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function cerrarYNotificar(idTiquete) {
-        alert("¡Tiquete " + idTiquete + " cerrado con éxito! Se ha disparado el correo de notificación de resolución al usuario.");
+    function cerrarTiquete(idTiquete) {
+        alert("¡Tiquete " + idTiquete + " cerrado con éxito!");
+        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
+        tiquetes = tiquetes.filter(t => t.id !== idTiquete);
+        localStorage.setItem('tfm_tiquetes', JSON.stringify(tiquetes));
+        renderTiquetes();
     }
 
-    // Inicializar carga y configurar auto-refresco silencioso cada 10 segundos
-    cargarTiquetes();
-    setInterval(() => {
-        location.reload();
-    }, 10000);
+    // Escuchar cambios en tiempo real si se abre en otra pestaña del mismo origen
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'tfm_tiquetes') {
+            renderTiquetes();
+        }
+    });
+
+    renderTiquetes();
 </script>
 
 </body>
