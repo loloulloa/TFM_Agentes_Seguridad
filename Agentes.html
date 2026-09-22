@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniAgent Ops • Panel Interno del Equipo de Soporte</title>
+    <title>OmniAgent Ops • Consola de Gestión de Grupo</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         header { width: 100%; max-width: 1200px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -15,7 +15,6 @@
         th { background: #1e293b; color: #38bdf8; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         tr:hover { background: rgba(56, 189, 248, 0.05); }
         .badge { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; display: inline-block; text-align: center; }
-        .critica { background: #7f1d1d; color: #fecaca; border: 1px solid #991b1b; }
         .alta { background: #7c2d12; color: #ffedd5; border: 1px solid #9a3412; }
         .media { background: #78350f; color: #fef3c7; border: 1px solid #92400e; }
         .baja { background: #065f46; color: #a7f3d0; border: 1px solid #047857; }
@@ -45,13 +44,26 @@
             </tr>
         </thead>
         <tbody id="tablaTiquetes">
-            <!-- Fila de ejemplo validada en tu prueba E2E -->
             <tr>
                 <td><strong>TKT-863750</strong></td>
-                <td>Análisis completado • Incidente de producción procesado por IA</td>
+                <td>Caída masiva del servidor principal de producción</td>
                 <td><span class="badge alta">Alta</span></td>
                 <td>Jorge Ulloa</td>
                 <td>2026-09-22 06:08:21</td>
+            </tr>
+            <tr>
+                <td><strong>TKT-118371</strong></td>
+                <td>Intermitencia en exportación de reportes PDF</td>
+                <td><span class="badge media">Media</span></td>
+                <td>Jorge Ulloa</td>
+                <td>2026-09-22 12:30:15</td>
+            </tr>
+            <tr>
+                <td><strong>TKT-398964</strong></td>
+                <td>Solicitud de cambio menor en etiqueta de campo</td>
+                <td><span class="badge baja">Baja</span></td>
+                <td>Jorge Ulloa</td>
+                <td>2026-09-22 12:30:40</td>
             </tr>
         </tbody>
     </table>
