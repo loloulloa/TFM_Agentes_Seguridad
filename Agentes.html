@@ -9,14 +9,17 @@
         header { width: 100%; max-width: 1200px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         h1 { color: #38bdf8; font-size: 20px; margin: 0; display: flex; align-items: center; gap: 10px; }
         .main-container { width: 100%; max-width: 1200px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155; }
-        h2 { color: #f1f5f9; margin-top: 0; margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        .team-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .agent-pill { background: #0f172a; border: 1px solid #475569; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #cbd5e1; }
+        .agent-pill.active { border-color: #38bdf8; color: #38bdf8; font-weight: 600; }
+        h2 { color: #f1f5f9; margin-top: 0; margin-bottom: 15px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #0f172a; border-radius: 8px; overflow: hidden; }
         th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
         th { background: #1e293b; color: #38bdf8; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         tr:hover { background: rgba(56, 189, 248, 0.05); }
         .badge { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; display: inline-block; text-align: center; }
         .alta { background: #7c2d12; color: #ffedd5; border: 1px solid #9a3412; }
-        .media { background: #ca8a04; color: #fefce8; border: 1px solid #eab308; } /* Amarillo brillante solicitado */
+        .media { background: #ca8a04; color: #fefce8; border: 1px solid #eab308; }
         .baja { background: #065f46; color: #a7f3d0; border: 1px solid #047857; }
         .btn-accion { background-color: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-accion:hover { background-color: #1d4ed8; }
@@ -32,8 +35,18 @@
 </header>
 
 <div class="main-container">
+    <h2>👥 Equipo de Soporte Activo (6 Especialistas)</h2>
+    <div class="team-bar">
+        <div class="agent-pill active">👑 Jorge Ulloa (Líder / TFM)</div>
+        <div class="agent-pill">🔧 Carlos Méndez (Infraestructura)</div>
+        <div class="agent-pill">💻 María Brenes (Desarrollo Tier 2)</div>
+        <div class="agent-pill">📊 Esteban Rojas (Base de Datos)</div>
+        <div class="agent-pill">🛡️ Ana Lucía Gómez (Seguridad / GRC)</div>
+        <div class="agent-pill">⚡ Roberto Salas (Redes y Comunicaciones)</div>
+    </div>
+
     <h2>📋 Trazabilidad y Asignación de Tiquetes en Tiempo Real</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Vista exclusiva para el equipo técnico: monitoreo de criticidad, diagnóstico automatizado, asignación de responsables y cierre operativo.</p>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Monitoreo de cargas de trabajo distribuidas entre el personal técnico de soporte.</p>
 
     <table>
         <thead>
@@ -59,7 +72,7 @@
                 <td><strong>TKT-118371</strong></td>
                 <td>Intermitencia en exportación de reportes PDF</td>
                 <td><span class="badge media">Media</span></td>
-                <td>Jorge Ulloa</td>
+                <td>María Brenes</td>
                 <td>2026-09-22 12:30:15</td>
                 <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-118371')">Cerrar y Enviar Correo</button></td>
             </tr>
@@ -67,7 +80,7 @@
                 <td><strong>TKT-398964</strong></td>
                 <td>Solicitud de cambio menor en etiqueta de campo</td>
                 <td><span class="badge baja">Baja</span></td>
-                <td>Jorge Ulloa</td>
+                <td>Carlos Méndez</td>
                 <td>2026-09-22 12:30:40</td>
                 <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-398964')">Cerrar y Enviar Correo</button></td>
             </tr>
