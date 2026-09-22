@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniAgent Ops • Consola de Gestión de Grupo</title>
+    <!-- Script para auto-refresco cada 10 segundos -->
+    <meta http-equiv="refresh" content="10">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         header { width: 100%; max-width: 1200px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -23,6 +25,7 @@
         .baja { background: #065f46; color: #a7f3d0; border: 1px solid #047857; }
         .btn-accion { background-color: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-accion:hover { background-color: #1d4ed8; }
+        .nav-links { display: flex; gap: 15px; }
         .nav-link { color: #38bdf8; text-decoration: none; font-size: 14px; font-weight: 600; }
         .nav-link:hover { text-decoration: underline; }
     </style>
@@ -31,11 +34,14 @@
 
 <header>
     <h1>🛡️ OmniAgent Ops • Consola de Gestión de Grupo</h1>
-    <a href="index.html" class="nav-link">← Ir al Portal de Autoservicio (Usuarios)</a>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">📊 Ir al Dashboard</a>
+        <a href="index.html" class="nav-link">🌐 Portal Usuarios</a>
+    </div>
 </header>
 
 <div class="main-container">
-    <h2>👥 Equipo de Soporte Activo (6 Especialistas)</h2>
+    <h2>👥 Equipo de Soporte Activo (6 Especialistas Sincronizados)</h2>
     <div class="team-bar">
         <div class="agent-pill active">👑 Jorge Ulloa (Líder / TFM)</div>
         <div class="agent-pill">🔧 Carlos Méndez (Infraestructura)</div>
@@ -45,8 +51,8 @@
         <div class="agent-pill">⚡ Roberto Salas (Redes y Comunicaciones)</div>
     </div>
 
-    <h2>📋 Trazabilidad y Asignación de Tiquetes en Tiempo Real</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Monitoreo de cargas de trabajo distribuidas entre el personal técnico de soporte.</p>
+    <h2>📋 Trazabilidad y Asignación de Tiquetes en Tiempo Real (Actualización cada 10s)</h2>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Monitoreo de cargas de trabajo distribuidas entre los 6 especialistas del equipo.</p>
 
     <table>
         <thead>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniAgent Ops • Dashboard Analítico Global</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 0; }
+        header { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .logo-area { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #0f172a; font-size: 20px; }
+        .logo-area span { color: #2563eb; }
+        .nav-menu { display: flex; gap: 20px; align-items: center; font-size: 14px; font-weight: 500; color: #64748b; }
+        .nav-menu a { text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; transition: background 0.2s; }
+        .nav-menu a.active, .nav-menu a:hover { color: #2563eb; background: #eff6ff; }
+        .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 25px 30px; max-width: 1400px; margin: 0 auto; }
+        .left-column { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .right-column { display: flex; flex-direction: column; }
+        .card { background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .select-filter { font-size: 12px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #475569; }
+        .chart-container { position: relative; height: 180px; display: flex; justify-content: center; align-items: center; }
+        .ticket-list-card { background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; height: 100%; }
+        .ticket-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .ticket-item:last-child { border-bottom: none; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1; }
+        .user-email { font-size: 13px; font-weight: 600; color: #0f172a; text-decoration: none; }
+        .ticket-time { font-size: 11px; color: #94a3b8; text-align: right; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area">
+        <span>OmniAgent</span> Help Desk
+    </div>
+    <div class="nav-menu">
+        <a href="dashboard.html" class="active">📊 Dashboard</a>
+        <a href="agentes.html">👥 Consola Grupo</a>
+        <a href="index.html">🌐 Portal Usuarios</a>
+    </div>
+</header>
+
+<div class="main-layout">
+    <div class="left-column">
+        <!-- Estado de Tiquetes -->
+        <div class="card">
+            <div class="card-header">
+                <span>Ticket Status</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tiquetes por Especialista (Inbox con los 6 agentes reales) -->
+        <div class="card">
+            <div class="card-header">
+                <span>Carga por Especialista (Inbox)</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="inboxChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tiquetes por Prioridad -->
+        <div class="card">
+            <div class="card-header">
+                <span>Ticket by Priority</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tiempos de Respuesta -->
+        <div class="card">
+            <div class="card-header">
+                <span>Average Ticket Response Time</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Derecha: Tiquetes con Fotos -->
+    <div class="right-column">
+        <div class="ticket-list-card">
+            <div class="card-header">
+                <span>Tiquetes Recientes Activos</span>
+                <select class="select-filter"><option>Last 30 Days</option></select>
+            </div>
+            
+            <div class="ticket-item">
+                <div class="user-info">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" class="user-avatar" alt="User">
+                    <span class="user-email">julloago007@gmail.com</span>
+                </div>
+                <div class="ticket-time">TKT-863750<br>Hace 5 min</div>
+            </div>
+
+            <div class="ticket-item">
+                <div class="user-info">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=faces" class="user-avatar" alt="User">
+                    <span class="user-email">carlos.mendez@soporte.com</span>
+                </div>
+                <div class="ticket-time">TKT-118371<br>Hace 12 min</div>
+            </div>
+
+            <div class="ticket-item">
+                <div class="user-info">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces" class="user-avatar" alt="User">
+                    <span class="user-email">maria.brenes@soporte.com</span>
+                </div>
+                <div class="ticket-time">TKT-398964<br>Hace 25 min</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    new Chart(document.getElementById('statusChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['New', 'Open', 'Pending', 'Hold', 'Resolved'],
+            datasets: [{
+                data: [3, 2, 1, 1, 4],
+                backgroundColor: ['#06b6d4', '#2563eb', '#eab308', '#ef4444', '#22c55e'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } }
+    });
+
+    // Gráfico sincronizado con los 6 Especialistas Reales
+    new Chart(document.getElementById('inboxChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: ['Jorge Ulloa', 'Carlos Méndez', 'María Brenes', 'Esteban Rojas', 'Ana Lucía Gómez', 'Roberto Salas'],
+            datasets: [{
+                data: [3, 2, 2, 1, 1, 1],
+                backgroundColor: ['#2563eb', '#38bdf8', '#9333ea', '#eab308', '#22c55e', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } } }
+    });
+
+    new Chart(document.getElementById('priorityChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['High', 'Normal', 'Low'],
+            datasets: [{
+                data: [4, 3, 2],
+                backgroundColor: ['#ef4444', '#eab308', '#22c55e'],
+                borderRadius: 4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' } } } }
+    });
+
+    new Chart(document.getElementById('timeChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['First Response Time', 'Resolution Time'],
+            datasets: [{
+                data: [2, 4],
+                backgroundColor: '#2563eb',
+                borderRadius: 4
+            }]
+        },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
+    });
+</script>
+
+</body>
+</html>
