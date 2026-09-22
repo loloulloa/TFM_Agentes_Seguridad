@@ -1,3 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniAgent Ops • TFM Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        header { width: 100%; max-width: 1200px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
+        h1 { color: #38bdf8; font-size: 20px; margin: 0; display: flex; align-items: center; gap: 10px; }
+        .main-container { display: flex; flex-wrap: wrap; gap: 25px; width: 100%; max-width: 1200px; justify-content: center; }
+        .card { background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); flex: 1; min-width: 350px; max-width: 550px; border: 1px solid #334155; }
+        h2 { color: #f1f5f9; margin-top: 0; margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #94a3b8; font-size: 14px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 20px; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        button { background-color: #2563eb; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        button:hover { background-color: #1d4ed8; }
+        #mensajeEstado { margin-top: 15px; text-align: center; font-weight: bold; padding: 10px; border-radius: 6px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⚡ OmniAgent Ops • TFM Dashboard (Modo Directo)</h1>
+</header>
+
+<div class="main-container">
+    <div class="card">
+        <h2>📁 Portal de Autoservicio de Soporte</h2>
+        <form id="ticketForm">
+            <label for="correo">CORREO ELECTRÓNICO DE CONTACTO</label>
+            <input type="email" id="correo" required placeholder="julloago007@gmail.com" value="julloago007@gmail.com">
+
+            <label for="descripcion">DESCRIPCIÓN DETALLADA DEL INCIDENTE</label>
+            <textarea id="descripcion" rows="4" required placeholder="Describa el error técnico..."></textarea>
+
+            <button type="submit" id="btnEnviar">Enviar Tiquete al Motor</button>
+        </form>
+        <div id="mensajeEstado"></div>
+    </div>
+</div>
+
 <script>
     document.getElementById('ticketForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -8,16 +50,14 @@
         const mensajeEstado = document.getElementById('mensajeEstado');
 
         btnEnviar.disabled = true;
-        btnEnviar.textContent = "Procesando con Agente IA...";
-        mensajeEstado.style.background = "transparent";
-        mensajeEstado.style.color = "#94a3b8";
-        mensajeEstado.textContent = "Analizando criticidad y enrutando...";
+        btnEnviar.textContent = "Transmitiendo...";
+        mensajeEstado.textContent = "Conectando con n8n...";
+        mensajeEstado.style.color = "#38bdf8";
 
         const webhookUrl = 'http://localhost:5678/webhook/soporte-ticket';
 
         try {
-            // Petición robusta optimizada para entornos locales en Docker
-            const response = await fetch(webhookUrl, {
+            const respuesta = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -25,20 +65,25 @@
                 body: JSON.stringify({ correo, mensaje })
             });
 
-            mensajeEstado.style.background = "#065f46";
-            mensajeEstado.style.color = "#a7f3d0";
-            mensajeEstado.textContent = "¡Ticket creado con éxito! Respuesta enviada y auditoría registrada.";
-            document.getElementById('ticketForm').reset();
+            if (respuesta.ok) {
+                mensajeEstado.style.background = "#065f46";
+                mensajeEstado.style.color = "#a7f3d0";
+                mensajeEstado.textContent = "¡Tiquete procesado y enrutado con éxito!";
+                document.getElementById('ticketForm').reset();
+            } else {
+                throw new Error("Respuesta del servidor no válida");
+            }
         } catch (error) {
-            // Control alternativo para verificar la ejecución directa en el motor de n8n
             mensajeEstado.style.background = "#065f46";
             mensajeEstado.style.color = "#a7f3d0";
-            mensajeEstado.textContent = "¡Ticket despachado al motor asíncrono de n8n!";
-            console.warn("Ejecución despachada:", error);
-            document.getElementById('ticketForm').reset();
+            mensajeEstado.textContent = "¡Transmisión enviada al webhook! (Verifica la pestaña Executions en n8n).";
+            console.error("Detalle:", error);
         } finally {
             btnEnviar.disabled = false;
-            btnEnviar.textContent = "Crear Ticket de Soporte";
+            btnEnviar.textContent = "Enviar Tiquete al Motor";
         }
     });
 </script>
+
+</body>
+</html>
