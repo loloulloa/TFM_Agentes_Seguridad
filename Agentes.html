@@ -16,8 +16,10 @@
         tr:hover { background: rgba(56, 189, 248, 0.05); }
         .badge { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; display: inline-block; text-align: center; }
         .alta { background: #7c2d12; color: #ffedd5; border: 1px solid #9a3412; }
-        .media { background: #78350f; color: #fef3c7; border: 1px solid #92400e; }
+        .media { background: #ca8a04; color: #fefce8; border: 1px solid #eab308; } /* Amarillo brillante solicitado */
         .baja { background: #065f46; color: #a7f3d0; border: 1px solid #047857; }
+        .btn-accion { background-color: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-accion:hover { background-color: #1d4ed8; }
         .nav-link { color: #38bdf8; text-decoration: none; font-size: 14px; font-weight: 600; }
         .nav-link:hover { text-decoration: underline; }
     </style>
@@ -31,7 +33,7 @@
 
 <div class="main-container">
     <h2>📋 Trazabilidad y Asignación de Tiquetes en Tiempo Real</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Vista exclusiva para el equipo técnico: monitoreo de criticidad, diagnóstico automatizado y asignación de responsables.</p>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Vista exclusiva para el equipo técnico: monitoreo de criticidad, diagnóstico automatizado, asignación de responsables y cierre operativo.</p>
 
     <table>
         <thead>
@@ -41,6 +43,7 @@
                 <th>Criticidad</th>
                 <th>Especialista Asignado</th>
                 <th>Fecha de Creación</th>
+                <th>Acciones Operativas</th>
             </tr>
         </thead>
         <tbody id="tablaTiquetes">
@@ -50,6 +53,7 @@
                 <td><span class="badge alta">Alta</span></td>
                 <td>Jorge Ulloa</td>
                 <td>2026-09-22 06:08:21</td>
+                <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-863750')">Cerrar y Enviar Correo</button></td>
             </tr>
             <tr>
                 <td><strong>TKT-118371</strong></td>
@@ -57,6 +61,7 @@
                 <td><span class="badge media">Media</span></td>
                 <td>Jorge Ulloa</td>
                 <td>2026-09-22 12:30:15</td>
+                <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-118371')">Cerrar y Enviar Correo</button></td>
             </tr>
             <tr>
                 <td><strong>TKT-398964</strong></td>
@@ -64,10 +69,17 @@
                 <td><span class="badge baja">Baja</span></td>
                 <td>Jorge Ulloa</td>
                 <td>2026-09-22 12:30:40</td>
+                <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-398964')">Cerrar y Enviar Correo</button></td>
             </tr>
         </tbody>
     </table>
 </div>
+
+<script>
+    function cerrarYNotificar(idTiquete) {
+        alert("¡Tiquete " + idTiquete + " cerrado con éxito! Se ha disparado el correo de notificación de resolución al usuario.");
+    }
+</script>
 
 </body>
 </html>
