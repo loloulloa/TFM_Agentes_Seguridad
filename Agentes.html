@@ -64,41 +64,44 @@
             </tr>
         </thead>
         <tbody id="tablaTiquetes">
-            <tr>
-                <td><strong>TKT-863750</strong></td>
-                <td>Caída masiva del servidor principal de producción</td>
-                <td><span class="badge alta">Alta</span></td>
-                <td>Jorge Ulloa</td>
-                <td>2026-09-22 06:08:21</td>
-                <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-863750')">Cerrar y Enviar Correo</button></td>
-            </tr>
-            <tr>
-                <td><strong>TKT-118371</strong></td>
-                <td>Intermitencia en exportación de reportes PDF</td>
-                <td><span class="badge media">Media</span></td>
-                <td>María Brenes</td>
-                <td>2026-09-22 12:30:15</td>
-                <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-118371')">Cerrar y Enviar Correo</button></td>
-            </tr>
-            <tr>
-                <td><strong>TKT-398964</strong></td>
-                <td>Solicitud de cambio menor en etiqueta de campo</td>
-                <td><span class="badge baja">Baja</span></td>
-                <td>Carlos Méndez</td>
-                <td>2026-09-22 12:30:40</td>
-                <td><button class="btn-accion" onclick="cerrarYNotificar('TKT-398964')">Cerrar y Enviar Correo</button></td>
-            </tr>
+            <!-- Los tiquetes dinámicos se inyectarán aquí -->
         </tbody>
     </table>
 </div>
 
 <script>
+    // Cargar tiquetes almacenados o mostrar base inicial sincronizada
+    function cargarTiquetes() {
+        const tbody = document.getElementById('tablaTiquetes');
+        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [
+            { id: 'TKT-863750', diag: 'Caída masiva del servidor principal de producción', crit: 'alta', agente: 'Jorge Ulloa', fecha: '2026-09-22 06:08:21' },
+            { id: 'TKT-118371', diag: 'Intermitencia en exportación de reportes PDF', crit: 'media', agente: 'María Brenes', fecha: '2026-09-22 12:30:15' },
+            { id: 'TKT-398964', diag: 'Solicitud de cambio menor en etiqueta de campo', crit: 'baja', agente: 'Carlos Méndez', fecha: '2026-09-22 12:30:40' }
+        ];
+
+        tbody.innerHTML = '';
+        tiquetes.forEach(t => {
+            let badgeClass = t.crit.toLowerCase() === 'alta' ? 'alta' : (t.crit.toLowerCase() === 'media' ? 'media' : 'baja');
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${t.id}</strong></td>
+                <td>${t.diag}</td>
+                <td><span class="badge ${badgeClass}">${t.crit.charAt(0).toUpperCase() + t.crit.slice(1)}</span></td>
+                <td>${t.agente}</td>
+                <td>${t.fecha}</td>
+                <td><button class="btn-accion" onclick="cerrarYNotificar('${t.id}')">Cerrar y Enviar Correo</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
     function cerrarYNotificar(idTiquete) {
         alert("¡Tiquete " + idTiquete + " cerrado con éxito! Se ha disparado el correo de notificación de resolución al usuario.");
     }
 
-    // Actualización limpia y silenciosa en segundo plano cada 10 segundos
-    setTimeout(() => {
+    // Inicializar carga y configurar auto-refresco silencioso cada 10 segundos
+    cargarTiquetes();
+    setInterval(() => {
         location.reload();
     }, 10000);
 </script>
