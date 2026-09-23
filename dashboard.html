@@ -1,22 +1,101 @@
-<script>
-    // Configuración común para tooltips con porcentaje
-    const tooltipPercentageConfig = {
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        let label = context.label || '';
-                        let value = context.raw || 0;
-                        let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                        let percentage = ((value / total) * 100).toFixed(1);
-                        return `${label}: ${value} tiquetes (${percentage}%)`;
-                    }
-                }
-            },
-            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }
-        }
-    };
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniAgent Ops • Dashboard Analítico Global</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 0; }
+        header { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .logo-area { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #0f172a; font-size: 20px; }
+        .logo-area span { color: #2563eb; }
+        .nav-menu { display: flex; gap: 20px; align-items: center; font-size: 14px; font-weight: 500; color: #64748b; }
+        .nav-menu a { text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; transition: background 0.2s; }
+        .nav-menu a.active, .nav-menu a:hover { color: #2563eb; background: #eff6ff; }
+        .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 25px 30px; max-width: 1400px; margin: 0 auto; }
+        .left-column { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .right-column { display: flex; flex-direction: column; }
+        .card { background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .select-filter { font-size: 12px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; color: #475569; }
+        .chart-container { position: relative; height: 180px; display: flex; justify-content: center; align-items: center; }
+        .ticket-list-card { background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; height: 100%; }
+        .ticket-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .ticket-item:last-child { border-bottom: none; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-email { font-size: 13px; font-weight: 600; color: #0f172a; text-decoration: none; }
+        .ticket-time { font-size: 11px; color: #94a3b8; text-align: right; }
+    </style>
+</head>
+<body>
 
+<header>
+    <div class="logo-area">
+        <span>OmniAgent</span> Help Desk
+    </div>
+    <div class="nav-menu">
+        <a href="dashboard.html" class="active">📊 Dashboard</a>
+        <a href="agentes.html">👥 Consola Grupo</a>
+        <a href="index.html">🌐 Portal Usuarios</a>
+    </div>
+</header>
+
+<div class="main-layout">
+    <div class="left-column">
+        <div class="card">
+            <div class="card-header">
+                <span>Ticket Status</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Carga por Especialista (Inbox)</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="inboxChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Ticket by Priority</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>Average Ticket Response Time</span>
+                <select class="select-filter"><option>Last 7 Days</option></select>
+            </div>
+            <div class="chart-container">
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-column">
+        <div class="ticket-list-card" id="listaTiquetesDashboard">
+            <div class="card-header">
+                <span>Tiquetes Recientes Activos</span>
+                <select class="select-filter"><option>Últimos 30 Días</option></select>
+            </div>
+            <div id="contenedorTiquetes"></div>
+        </div>
+    </div>
+</div>
+
+<script>
     // 1. Gráfico de Estado de Tiquetes con Porcentajes
     new Chart(document.getElementById('statusChart').getContext('2d'), {
         type: 'doughnut',
@@ -30,8 +109,21 @@
         },
         options: { 
             responsive: true, 
-            maintainAspectRatio: false, 
-            ...tooltipPercentageConfig 
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} tiquetes (${percentage}%)`;
+                        }
+                    }
+                },
+                legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
         }
     });
 
@@ -93,4 +185,38 @@
         },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
     });
+
+    // 5. Renderizado dinámico de tiquetes recientes desde localStorage
+    function renderizarDashboard() {
+        const contenedor = document.getElementById('contenedorTiquetes');
+        if (!contenedor) return;
+        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
+        
+        contenedor.innerHTML = '';
+        const tiquetesRecientes = tiquetes.slice(0, 4);
+
+        tiquetesRecientes.forEach(t => {
+            let div = document.createElement('div');
+            div.className = 'ticket-item';
+            div.innerHTML = `
+                <div class="user-info">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background-color: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                        ${t.agente ? t.agente.charAt(0) : 'J'}
+                    </div>
+                    <span class="user-email" style="text-transform: capitalize;">${t.diag ? t.diag.substring(0, 30) : 'Incidente'}...</span>
+                </div>
+                <div class="ticket-time">${t.id}<br><span style="color:#2563eb; font-weight:bold;">${t.crit}</span></div>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
+
+    renderizarDashboard();
+    
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'tfm_tiquetes') renderizarDashboard();
+    });
 </script>
+
+</body>
+</html>
