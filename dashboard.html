@@ -45,7 +45,7 @@
     <div class="left-column">
         <div class="card">
             <div class="card-header">
-                <span>Ticket Status</span>
+                <span>Ticket Status (% Activos)</span>
                 <select class="select-filter"><option>Last 7 Days</option></select>
             </div>
             <div class="chart-container">
@@ -88,7 +88,7 @@
         <div class="ticket-list-card" id="listaTiquetesDashboard">
             <div class="card-header">
                 <span>Tiquetes Recientes Activos</span>
-                <select class="select-filter"><option>Últimos 30 Días</option></select>
+                <select class="select-filter"><option>En Tiempo Real</option></select>
             </div>
             <div id="contenedorTiquetes"></div>
         </div>
@@ -96,7 +96,32 @@
 </div>
 
 <script>
-    // 1. Gráfico de Estado de Tiquetes con Porcentajes
+    // Plugin personalizado para mostrar porcentajes fijos sobre las gráficas circulares
+    const percentagePlugin = {
+        id: 'percentagePlugin',
+        afterDatasetsDraw(chart) {
+            const { ctx, data } = chart;
+            chart.data.datasets.forEach((dataset, i) => {
+                let total = dataset.data.reduce((acc, val) => acc + val, 0);
+                chart.getDatasetMeta(i).data.forEach((datapoint, index) => {
+                    let value = dataset.data[index];
+                    if (value === 0) return;
+                    let percentage = ((value / total) * 100).toFixed(0) + '%';
+                    let { x, y } = datapoint.tooltipPosition();
+                    
+                    ctx.save();
+                    ctx.font = 'bold 11px sans-serif';
+                    ctx.fillStyle = '#1e293b';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(percentage, x, y);
+                    ctx.restore();
+                });
+            });
+        }
+    };
+
+    // 1. Gráfico de Estado de Tiquetes
     new Chart(document.getElementById('statusChart').getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -111,23 +136,13 @@
             responsive: true, 
             maintainAspectRatio: false,
             plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            let value = context.raw || 0;
-                            let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} tiquetes (${percentage}%)`;
-                        }
-                    }
-                },
                 legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }
             }
-        }
+        },
+        plugins: [percentagePlugin]
     });
 
-    // 2. Gráfico de Carga por Especialista con Porcentajes
+    // 2. Gráfico de Carga por Especialista
     new Chart(document.getElementById('inboxChart').getContext('2d'), {
         type: 'pie',
         data: {
@@ -142,20 +157,10 @@
             responsive: true, 
             maintainAspectRatio: false, 
             plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            let value = context.raw || 0;
-                            let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} asignaciones (${percentage}%)`;
-                        }
-                    }
-                },
                 legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } }
             }
-        }
+        },
+        plugins: [percentagePlugin]
     });
 
     // 3. Gráfico de Prioridad
@@ -186,16 +191,20 @@
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
     });
 
-    // 5. Renderizado dinámico de tiquetes recientes desde localStorage
+    // 5. Renderizado dinámico sincronizado (filtra tiquetes cerrados o vacíos)
     function renderizarDashboard() {
         const contenedor = document.getElementById('contenedorTiquetes');
         if (!contenedor) return;
-        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
         
+        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
         contenedor.innerHTML = '';
-        const tiquetesRecientes = tiquetes.slice(0, 4);
+        
+        if (tiquetes.length === 0) {
+            contenedor.innerHTML = '<div style="font-size:13px; color:#94a3b8; text-align:center; padding:20px;">No hay tiquetes activos pendientes.</div>';
+            return;
+        }
 
-        tiquetesRecientes.forEach(t => {
+        tiquetes.forEach(t => {
             let div = document.createElement('div');
             div.className = 'ticket-item';
             div.innerHTML = `
@@ -203,7 +212,7 @@
                     <div style="width: 38px; height: 38px; border-radius: 50%; background-color: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
                         ${t.agente ? t.agente.charAt(0) : 'J'}
                     </div>
-                    <span class="user-email" style="text-transform: capitalize;">${t.diag ? t.diag.substring(0, 30) : 'Incidente'}...</span>
+                    <span class="user-email" style="text-transform: capitalize;">${t.diag ? t.diag.substring(0, 28) : 'Incidente'}...</span>
                 </div>
                 <div class="ticket-time">${t.id}<br><span style="color:#2563eb; font-weight:bold;">${t.crit}</span></div>
             `;
