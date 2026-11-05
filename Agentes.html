@@ -102,23 +102,25 @@
         });
     }
 
-    function cerrarTiquete(idTiquete) {
-        alert("¡Tiquete " + idTiquete + " cerrado con éxito!");
-        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
-        tiquetes = tiquetes.filter(t => t.id !== idTiquete);
-        localStorage.setItem('tfm_tiquetes', JSON.stringify(tiquetes));
-        renderTiquetes();
-    }
+    async function cerrarTiquete(idTiquete, emailUsuario) {
+    if (!confirm("¿Deseas cerrar el tiquete " + idTiquete + " y notificar al cliente por correo?")) return;
 
-    // Escuchar cambios en tiempo real si se abre en otra pestaña del mismo origen
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'tfm_tiquetes') {
-            renderTiquetes();
-        }
-    });
-
+    // 1. Eliminar del localStorage local
+    let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
+    tiquetes = tiquetes.filter(t => t.id !== idTiquete);
+    localStorage.setItem('tfm_tiquetes', JSON.stringify(tiquetes));
     renderTiquetes();
-</script>
 
-</body>
-</html>
+    // 2. Disparar Webhook hacia n8n para enviar el correo de cierre vía Gmail
+    try {
+        await fetch('http://localhost:5678/webhook/cerrar-ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: idTiquete, status: "Resuelto / Cerrado" })
+        });
+        alert("¡Tiquete " + idTiquete + " cerrado y correo de notificación enviado con éxito!");
+    } catch (err) {
+        console.log("Aviso de red n8n (Cierre):", err);
+        alert("Tiquete cerrado localmente, but the n8n webhook notification failed.");
+    }
+}

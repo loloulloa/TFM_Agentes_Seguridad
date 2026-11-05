@@ -327,3 +327,6 @@
 - **Hito alcanzado:** Reintegraci贸n formal del dise帽o visual avanzado en modo oscuro para la interfaz de usuario.
 - **Detalle t茅cnico:** Se asegur贸 la persistencia del layout corporativo adaptado para la presentaci贸n institucional del TFM.
 - **Pr贸ximos pasos:** Configurar las rutas de criticidades Medias y Bajas en el nodo condicional de n8n.
+## [2026-10-23 13:24] - Infraestructura
+- Sincronizaci髇 exitosa de variables de entorno n8n con dominio de Ngrok (conjuror-roman-ambitious.ngrok-free.dev).
+
