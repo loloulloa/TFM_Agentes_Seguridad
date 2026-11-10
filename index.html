@@ -11,15 +11,19 @@
         .form-container { width: 100%; max-width: 800px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-size: 14px; color: #cbd5e1; font-weight: 600; }
-        input, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: #f8fafc; font-size: 14px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: #f8fafc; font-size: 14px; box-sizing: border-box; font-family: inherit; }
         input:focus, textarea:focus { outline: none; border-color: #38bdf8; }
         textarea { resize: vertical; height: 120px; }
         button { background-color: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s; }
         button:hover { background-color: #1d4ed8; }
+        button:disabled { background-color: #475569; cursor: not-allowed; }
         .nav-links { display: flex; gap: 15px; }
         .nav-link { color: #38bdf8; text-decoration: none; font-size: 14px; font-weight: 600; }
         .nav-link:hover { text-decoration: underline; }
-        #mensajeExito { display: none; margin-top: 15px; padding: 12px; background: #065f46; color: #a7f3d0; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 600; }
+        .aviso { display: none; margin-top: 15px; padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 600; }
+        .aviso.ok { background: #065f46; color: #a7f3d0; }
+        .aviso.error { background: #7f1d1d; color: #fecaca; }
+        .ayuda { font-size: 12px; color: #94a3b8; margin-top: 6px; }
     </style>
 </head>
 <body>
@@ -34,8 +38,8 @@
 
 <div class="form-container">
     <h2>Crear Nuevo Tiquete de Soporte</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Envía tu incidencia al pipeline E2E de n8n.</p>
-    
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Tu incidencia es analizada por el agente de IA y asignada al especialista correspondiente.</p>
+
     <form id="ticketForm">
         <div class="form-group">
             <label for="email">Correo Electrónico del Usuario</label>
@@ -49,54 +53,66 @@
 
         <div class="form-group">
             <label for="descripcion">Descripción Detallada</label>
-            <textarea id="descripcion" required placeholder="Explica detalladamente el fallo..."></textarea>
+            <textarea id="descripcion" required placeholder="Explica el fallo: qué ocurre, cuántas personas afecta y desde hace cuánto tiempo..."></textarea>
+            <div class="ayuda">Indica cuántos usuarios están afectados y desde cuándo; ayuda a priorizar tu caso.</div>
         </div>
 
-        <button type="submit">Enviar Tiquete al Pipeline E2E</button>
+        <button type="submit" id="btnEnviar">Enviar Tiquete</button>
     </form>
 
-    <div id="mensajeExito">¡Tiquete enviado con éxito y sincronizado con la Consola de Agentes!</div>
+    <div id="aviso" class="aviso"></div>
 </div>
 
 <script>
-    document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+    // URL de PRODUCCIÓN del workflow de ingesta (requiere workflow publicado y ngrok activo)
+    const WEBHOOK_URL = 'https://conjuror-roman-ambitious.ngrok-free.dev/webhook/ticket-soporte';
+
+    function mostrarAviso(tipo, texto) {
+        const aviso = document.getElementById('aviso');
+        aviso.className = 'aviso ' + tipo;
+        aviso.textContent = texto;
+        aviso.style.display = 'block';
+        setTimeout(() => { aviso.style.display = 'none'; }, 8000);
+    }
+
+    document.getElementById('ticketForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        const email = document.getElementById('email').value;
-        const asunto = document.getElementById('asunto').value;
-        const descripcion = document.getElementById('descripcion').value;
-        
-        const idTiquete = "TKT-" + Math.floor(100000 + Math.random() * 900000);
-        const fechaActual = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        const boton = document.getElementById('btnEnviar');
+        const correo = document.getElementById('email').value.trim();
+        const asunto = document.getElementById('asunto').value.trim();
+        const descripcion = document.getElementById('descripcion').value.trim();
 
-        const nuevoTiquete = {
-            id: idTiquete,
-            diag: asunto + ": " + descripcion,
-            crit: "Alta",
-            agente: "Jorge Ulloa",
-            fecha: fechaActual
+        // El workflow espera { correo, mensaje }
+        const payload = {
+            correo: correo,
+            mensaje: asunto + '. ' + descripcion
         };
 
-        let listaTiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
-        listaTiquetes.unshift(nuevoTiquete);
-        localStorage.setItem('tfm_tiquetes', JSON.stringify(listaTiquetes));
+        boton.disabled = true;
+        boton.textContent = 'Enviando...';
 
         try {
-            await fetch('http://localhost:5678/webhook/soporte-ticket', {
+            const resp = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, asunto, descripcion, id: idTiquete })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify(payload)
             });
+
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+            mostrarAviso('ok', '¡Tiquete recibido! Recibirás un correo con tu número de seguimiento en unos segundos.');
+            document.getElementById('ticketForm').reset();
         } catch (err) {
-            console.log("Nota de red n8n:", err);
+            console.error('Error al enviar a n8n:', err);
+            mostrarAviso('error', 'No se pudo enviar el tiquete. Verifica la conexión con el pipeline e inténtalo de nuevo.');
+        } finally {
+            boton.disabled = false;
+            boton.textContent = 'Enviar Tiquete';
         }
-
-        document.getElementById('mensajeExito').style.display = 'block';
-        document.getElementById('ticketForm').reset();
-
-        setTimeout(() => {
-            document.getElementById('mensajeExito').style.display = 'none';
-        }, 4000);
     });
 </script>
 

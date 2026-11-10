@@ -1,0 +1,31 @@
+ID Tiquete	Mensaje	Categoria	Criticidad	Confianza	Operador Nombre
+TKT-1794275384815	No hay internet en todo el piso 2 desde hace 1 hora, somos 15 personas sin conexion.	redes	alta	0.95	Roberto Salas
+TKT-1794275393892	La VPN no conecta desde las 8am, 6 teletrabajadores no pueden acceder a los sistemas desde hace 2 horas.	redes	alta	0.95	Roberto Salas
+TKT-1794275404283	El wifi de la sala de reuniones va lento a ratos, pero se puede trabajar conectando el cable.	redes	media	0.8	Roberto Salas
+TKT-1794275418728	Quisiera saber la contrasena del wifi de invitados para una visita que llega manana.	redes	baja	0.95	Roberto Salas
+TKT-1794275426178	El switch del cuarto de telecomunicaciones esta caido desde hace 2 horas y 20 equipos estan sin red.	redes	alta	0.95	Roberto Salas
+TKT-1794275444112	El ERP no abre desde hace 45 minutos, el area de contabilidad (5 personas) no puede trabajar.	software	alta	0.85	María Brenes
+TKT-1794275459434	Excel se cierra solo al abrir un archivo grande, pero con otros archivos funciona. Solo me pasa a mi desde ayer.	software	alta	0.9	María Brenes
+TKT-1794275463317	Como puedo configurar mi firma de correo en Outlook?	software	baja	0.8	María Brenes
+TKT-1794275482941	La app de inventario tarda 20 segundos en cargar cada pantalla, 4 usuarios lo notamos pero podemos seguir trabajando.	software	media	0.8	María Brenes
+TKT-1794275497678	El servidor de archivos no enciende desde esta manana, 25 personas sin acceso a sus documentos hace 3 horas.	hardware	alta	0.95	Carlos Méndez
+TKT-1794275519479	La impresora del segundo piso atasca el papel seguido, pero podemos usar la del primer piso.	hardware	media	0.8	Carlos Méndez
+TKT-1794275527766	Necesito un mouse nuevo, el mio tiene la rueda desgastada.	hardware	baja	0.95	Carlos Méndez
+TKT-1794275538499	El monitor de mi puesto parpadea y no se ve nada desde hace 1 hora, no puedo trabajar.	hardware	alta	0.95	Carlos Méndez
+TKT-1794275553651	La base de datos de produccion esta caida desde hace 50 minutos, hay 40 usuarios afectados.	base_datos	alta	0.95	Esteban Rojas
+TKT-1794275573096	Faltan los registros de ventas de la ultima semana en la base de datos, 5 usuarios del area comercial no pueden cerrar el mes desde hace 2 horas.	base_datos	alta	0.95	Esteban Rojas
+TKT-1794275576180	Algunas consultas del reporte mensual tardan mas de 2 minutos pero terminan. Afecta a 2 analistas.	base_datos	media	0.95	Esteban Rojas
+TKT-1794275584601	Quisiera solicitar acceso de solo lectura a la base de datos de reportes para una analista nueva.	base_datos	baja	0.95	Esteban Rojas
+TKT-1794275594016	El motor SQL se reinicia solo cada 10 minutos desde hace 1 hora, 12 personas pierden su trabajo.	base_datos	alta	0.95	Esteban Rojas
+TKT-1794275605807	Varios empleados recibieron un correo falso del banco y 3 hicieron clic en el enlace hace 1 hora.	seguridad	alta	0.95	Ana Lucía Gómez
+TKT-1794275613979	Detecte que alguien inicio sesion en mi cuenta desde otro pais y mis correos se envian solos desde hace 2 horas.	seguridad	alta	0.95	Ana Lucía Gómez
+TKT-1794275627340	Recibi un correo sospechoso pero no hice clic en nada, solo quiero reportarlo.	seguridad	baja	0.85	Ana Lucía Gómez
+TKT-1794275633223	Quiero conocer la politica de contrasenas de la empresa.	seguridad	baja	0.95	Ana Lucía Gómez
+TKT-1794275643961	El antivirus detecto un ransomware en el equipo de contabilidad hace 40 minutos y 4 equipos estan bloqueados.	seguridad	alta	0.95	Ana Lucía Gómez
+TKT-1794275651743	Quiero reservar la sala de reuniones para el viernes a las 3pm.	otro	baja	0.95	Jorge Ulloa
+TKT-1794275662965	Donde puedo solicitar una constancia laboral?	otro	baja	0.9	Jorge Ulloa
+TKT-1794275675954	Necesito ayuda para organizar la capacitacion de herramientas para el equipo nuevo la proxima semana.	otro	baja	0.8	Jorge Ulloa
+TKT-1794275685037	Quisiera felicitar al equipo de soporte por la atencion que me dieron ayer.	otro	baja	0.95	Jorge Ulloa
+TKT-1794276868733	El sistema de nomina da error 500 al generar planillas desde hace 1 hora, somos 3 en recursos humanos.	software	alta	0.95	María Brenes
+TKT-1794276899667	No puedo iniciar sesion en el portal de clientes desde hace 2 horas, tampoco mis 3 companeros.	software	alta	0.9	María Brenes
+TKT-1794276918063	Mi computadora no enciende desde hace 3 horas y no puedo trabajar.	hardware	alta	0.8	Carlos Méndez

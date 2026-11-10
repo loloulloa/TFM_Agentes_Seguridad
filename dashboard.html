@@ -10,10 +10,11 @@
         header { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .logo-area { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #0f172a; font-size: 20px; }
         .logo-area span { color: #2563eb; }
-        
-        /* Indicador de Estado del Sistema */
+
         .system-status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; background: #f8fafc; padding: 6px 12px; border-radius: 20px; border: 1px solid #e2e8f0; color: #334155; }
-        .status-dot { width: 10px; height: 10px; background-color: #22c55e; border-radius: 50%; box-shadow: 0 0 0 rgba(34, 197, 94, 0.4); animation: pulse 2s infinite; }
+        .status-dot { width: 10px; height: 10px; background-color: #94a3b8; border-radius: 50%; }
+        .status-dot.ok { background-color: #22c55e; animation: pulse 2s infinite; }
+        .status-dot.error { background-color: #ef4444; }
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
@@ -24,14 +25,13 @@
         .nav-menu a { text-decoration: none; color: #64748b; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; transition: background 0.2s; }
         .nav-menu a.active, .nav-menu a:hover { color: #2563eb; background: #eff6ff; }
 
-        /* Tarjetas de KPIs de Cabecera */
         .kpi-container { max-width: 1400px; margin: 25px 30px 0 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .kpi-card { background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .kpi-info h4 { margin: 0; font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
         .kpi-info .kpi-value { font-size: 24px; font-weight: 700; color: #0f172a; margin-top: 5px; }
+        .kpi-info .kpi-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
         .kpi-icon { width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-        /* Layout Principal */
         .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px 30px; max-width: 1400px; margin: 0 auto; }
         .left-column { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .right-column { display: flex; flex-direction: column; }
@@ -43,8 +43,11 @@
         .ticket-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
         .ticket-item:last-child { border-bottom: none; }
         .user-info { display: flex; align-items: center; gap: 12px; }
-        .user-email { font-size: 13px; font-weight: 600; color: #0f172a; text-decoration: none; }
+        .user-email { font-size: 13px; font-weight: 600; color: #0f172a; }
         .ticket-time { font-size: 11px; color: #94a3b8; text-align: right; }
+        .crit-alta { color: #ef4444; font-weight: bold; }
+        .crit-media { color: #eab308; font-weight: bold; }
+        .crit-baja { color: #22c55e; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -53,11 +56,10 @@
     <div class="logo-area">
         <span>OmniAgent</span> Help Desk
     </div>
-    
-    <!-- Indicador de Estado en Vivo -->
+
     <div class="system-status">
-        <div class="status-dot"></div>
-        <span>Pipeline n8n: Operativo</span>
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Pipeline n8n: conectando...</span>
     </div>
 
     <div class="nav-menu">
@@ -67,26 +69,28 @@
     </div>
 </header>
 
-<!-- Tarjetas de KPIs de Cabecera -->
 <div class="kpi-container">
     <div class="kpi-card">
         <div class="kpi-info">
             <h4>Total Tiquetes Activos</h4>
             <div class="kpi-value" id="kpiTotalActivos">0</div>
+            <div class="kpi-sub" id="kpiTotalSub">Total registrados: 0</div>
         </div>
         <div class="kpi-icon" style="background: #eff6ff; color: #2563eb;">🎫</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-info">
             <h4>Tiempo Promedio Resolución</h4>
-            <div class="kpi-value">1.8 min</div>
+            <div class="kpi-value" id="kpiTiempoResolucion">N/D</div>
+            <div class="kpi-sub" id="kpiTiempoSub">Sin tiquetes resueltos aún</div>
         </div>
         <div class="kpi-icon" style="background: #f0fdf4; color: #22c55e;">⚡</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-info">
             <h4>Tasa de Automatización (IA)</h4>
-            <div class="kpi-value">98.5%</div>
+            <div class="kpi-value" id="kpiAutomatizacion">0%</div>
+            <div class="kpi-sub">Tiquetes procesados sin revisión humana</div>
         </div>
         <div class="kpi-icon" style="background: #faf5ff; color: #9333ea;">🤖</div>
     </div>
@@ -96,8 +100,7 @@
     <div class="left-column">
         <div class="card">
             <div class="card-header">
-                <span>Ticket Status (% Activos)</span>
-                <select class="select-filter"><option>Last 7 Days</option></select>
+                <span>Estado de Tiquetes</span>
             </div>
             <div class="chart-container">
                 <canvas id="statusChart"></canvas>
@@ -106,8 +109,7 @@
 
         <div class="card">
             <div class="card-header">
-                <span>Carga por Especialista (Inbox)</span>
-                <select class="select-filter"><option>Last 7 Days</option></select>
+                <span>Carga por Especialista</span>
             </div>
             <div class="chart-container">
                 <canvas id="inboxChart"></canvas>
@@ -116,8 +118,7 @@
 
         <div class="card">
             <div class="card-header">
-                <span>Ticket by Priority</span>
-                <select class="select-filter"><option>Last 7 Days</option></select>
+                <span>Tiquetes por Criticidad</span>
             </div>
             <div class="chart-container">
                 <canvas id="priorityChart"></canvas>
@@ -126,20 +127,19 @@
 
         <div class="card">
             <div class="card-header">
-                <span>Average Ticket Response Time</span>
-                <select class="select-filter"><option>Last 7 Days</option></select>
+                <span>Tiquetes por Categoría</span>
             </div>
             <div class="chart-container">
-                <canvas id="timeChart"></canvas>
+                <canvas id="categoryChart"></canvas>
             </div>
         </div>
     </div>
 
     <div class="right-column">
-        <div class="ticket-list-card" id="listaTiquetesDashboard">
+        <div class="ticket-list-card">
             <div class="card-header">
-                <span>Tiquetes Recientes Activos</span>
-                <select class="select-filter"><option>En Tiempo Real</option></select>
+                <span>Tiquetes Recientes</span>
+                <span style="font-size:11px; color:#94a3b8;" id="ultimaActualizacion"></span>
             </div>
             <div id="contenedorTiquetes"></div>
         </div>
@@ -147,138 +147,174 @@
 </div>
 
 <script>
-    // Plugin para porcentajes fijos en gráficos circulares
+    // ================== CONFIGURACIÓN ==================
+    const API_URL = 'https://conjuror-roman-ambitious.ngrok-free.dev/webhook/tickets';
+    const REFRESCO_MS = 30000;
+
+    const ESPECIALISTAS = ['Jorge Ulloa', 'Carlos Méndez', 'María Brenes', 'Esteban Rojas', 'Ana Lucía Gómez', 'Roberto Salas'];
+    const ESTADOS = ['Abierto', 'Revisión manual', 'Resuelto'];
+    const CRITICIDADES = ['alta', 'media', 'baja'];
+    const CATEGORIAS = ['redes', 'software', 'hardware', 'base_datos', 'seguridad', 'otro'];
+
+    // ================== UTILIDADES ==================
+    const limpiar = v => (v === undefined || v === null) ? '' : String(v).replace(/[\t\r\n]+/g, ' ').trim();
+    const escapar = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const contar = (lista, claves) => claves.map(k => lista.filter(x => x === k).length);
+
+    function formatearDuracion(minutos) {
+        if (minutos < 1) return '< 1 min';
+        if (minutos < 60) return minutos.toFixed(1) + ' min';
+        if (minutos < 1440) return (minutos / 60).toFixed(1) + ' h';
+        return (minutos / 1440).toFixed(1) + ' días';
+    }
+
+    // Plugin de porcentajes sobre gráficos circulares
     const percentagePlugin = {
         id: 'percentagePlugin',
         afterDatasetsDraw(chart) {
-            const { ctx, data } = chart;
+            const { ctx } = chart;
             chart.data.datasets.forEach((dataset, i) => {
-                let total = dataset.data.reduce((acc, val) => acc + val, 0);
-                chart.getDatasetMeta(i).data.forEach((datapoint, index) => {
-                    let value = dataset.data[index];
-                    if (value === 0) return;
-                    let percentage = ((value / total) * 100).toFixed(0) + '%';
-                    let { x, y } = datapoint.tooltipPosition();
-                    
+                const total = dataset.data.reduce((a, v) => a + v, 0);
+                if (total === 0) return;
+                chart.getDatasetMeta(i).data.forEach((punto, idx) => {
+                    const valor = dataset.data[idx];
+                    if (valor === 0) return;
+                    const { x, y } = punto.tooltipPosition();
                     ctx.save();
                     ctx.font = 'bold 11px sans-serif';
                     ctx.fillStyle = '#1e293b';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(percentage, x, y);
+                    ctx.fillText(((valor / total) * 100).toFixed(0) + '%', x, y);
                     ctx.restore();
                 });
             });
         }
     };
 
-    // 1. Gráfico de Estado de Tiquetes
-    new Chart(document.getElementById('statusChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['New', 'Open', 'Pending', 'Hold', 'Resolved'],
-            datasets: [{
-                data: [3, 2, 1, 1, 4],
-                backgroundColor: ['#06b6d4', '#2563eb', '#eab308', '#ef4444', '#22c55e'],
-                borderWidth: 0
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } }
-        },
-        plugins: [percentagePlugin]
-    });
+    // ================== GRÁFICOS (se crean una vez y se actualizan) ==================
+    const graficos = {};
 
-    // 2. Gráfico de Carga por Especialista
-    new Chart(document.getElementById('inboxChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: ['Jorge Ulloa', 'Carlos Méndez', 'María Brenes', 'Esteban Rojas', 'Ana Lucía Gómez', 'Roberto Salas'],
-            datasets: [{
-                data: [3, 2, 2, 1, 1, 1],
-                backgroundColor: ['#2563eb', '#38bdf8', '#9333ea', '#eab308', '#22c55e', '#ef4444'],
-                borderWidth: 0
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } }
-        },
-        plugins: [percentagePlugin]
-    });
+    function crearGraficos() {
+        graficos.estado = new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: { labels: ESTADOS, datasets: [{ data: [0, 0, 0], backgroundColor: ['#2563eb', '#eab308', '#22c55e'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } } },
+            plugins: [percentagePlugin]
+        });
 
-    // 3. Gráfico de Prioridad
-    new Chart(document.getElementById('priorityChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: ['High', 'Normal', 'Low'],
-            datasets: [{
-                data: [4, 3, 2],
-                backgroundColor: ['#ef4444', '#eab308', '#22c55e'],
-                borderRadius: 4
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' } } } }
-    });
+        graficos.carga = new Chart(document.getElementById('inboxChart'), {
+            type: 'pie',
+            data: { labels: ESPECIALISTAS, datasets: [{ data: ESPECIALISTAS.map(() => 0), backgroundColor: ['#2563eb', '#38bdf8', '#9333ea', '#eab308', '#22c55e', '#ef4444'], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } } },
+            plugins: [percentagePlugin]
+        });
 
-    // 4. Gráfico de Tiempo de Respuesta
-    new Chart(document.getElementById('timeChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: ['First Response Time', 'Resolution Time'],
-            datasets: [{
-                data: [2, 4],
-                backgroundColor: '#2563eb',
-                borderRadius: 4
-            }]
-        },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
-    });
+        graficos.criticidad = new Chart(document.getElementById('priorityChart'), {
+            type: 'bar',
+            data: { labels: ['Alta', 'Media', 'Baja'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#ef4444', '#eab308', '#22c55e'], borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } } } }
+        });
 
-    // 5. Renderizado dinámico y actualización de KPIs ejecutivos
-    function renderizarDashboard() {
-        const contenedor = document.getElementById('contenedorTiquetes');
-        const kpiTotal = document.getElementById('kpiTotalActivos');
-        if (!contenedor) return;
-        
-        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
-        
-        // Actualizar tarjeta KPI de total activos dinámicamente
-        if (kpiTotal) {
-            kpiTotal.textContent = tiquetes.length;
+        graficos.categoria = new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: { labels: ['Redes', 'Software', 'Hardware', 'Base datos', 'Seguridad', 'Otro'], datasets: [{ data: CATEGORIAS.map(() => 0), backgroundColor: '#2563eb', borderRadius: 4 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
+        });
+    }
+
+    // ================== ACTUALIZACIÓN DE LA PANTALLA ==================
+    function actualizarDashboard(tiquetes) {
+        const total = tiquetes.length;
+        const activos = tiquetes.filter(t => t.estado !== 'Resuelto').length;
+        const automaticos = tiquetes.filter(t => t.estado === 'Abierto' || t.estado === 'Resuelto').length;
+
+        // KPIs
+        document.getElementById('kpiTotalActivos').textContent = activos;
+        document.getElementById('kpiTotalSub').textContent = 'Total registrados: ' + total;
+        document.getElementById('kpiAutomatizacion').textContent = total ? ((automaticos / total) * 100).toFixed(1) + '%' : 'N/D';
+
+        // Tiempo promedio de resolución = promedio(Fecha Resolucion - Fecha Creación) de los tiquetes resueltos
+        const duraciones = tiquetes
+            .filter(t => t.estado === 'Resuelto' && t.fechaCreacion && t.fechaResolucion)
+            .map(t => (new Date(t.fechaResolucion) - new Date(t.fechaCreacion)) / 60000)
+            .filter(m => !isNaN(m) && m >= 0);
+        const elTiempo = document.getElementById('kpiTiempoResolucion');
+        const elTiempoSub = document.getElementById('kpiTiempoSub');
+        if (duraciones.length) {
+            const promedio = duraciones.reduce((a, b) => a + b, 0) / duraciones.length;
+            elTiempo.textContent = formatearDuracion(promedio);
+            elTiempoSub.textContent = 'Calculado sobre ' + duraciones.length + ' tiquete(s) resuelto(s)';
+        } else {
+            elTiempo.textContent = 'N/D';
+            elTiempoSub.textContent = 'Sin tiquetes resueltos aún';
         }
 
+        // Gráficos
+        graficos.estado.data.datasets[0].data = contar(tiquetes.map(t => t.estado), ESTADOS);
+        graficos.carga.data.datasets[0].data = contar(tiquetes.map(t => t.agente), ESPECIALISTAS);
+        graficos.criticidad.data.datasets[0].data = contar(tiquetes.map(t => t.crit), CRITICIDADES);
+        graficos.categoria.data.datasets[0].data = contar(tiquetes.map(t => t.categoria), CATEGORIAS);
+        Object.values(graficos).forEach(g => g.update());
+
+        // Lista de tiquetes (más recientes primero)
+        const contenedor = document.getElementById('contenedorTiquetes');
         contenedor.innerHTML = '';
-        
-        if (tiquetes.length === 0) {
-            contenedor.innerHTML = '<div style="font-size:13px; color:#94a3b8; text-align:center; padding:20px;">No hay tiquetes activos pendientes.</div>';
+        if (total === 0) {
+            contenedor.innerHTML = '<div style="font-size:13px; color:#94a3b8; text-align:center; padding:20px;">No hay tiquetes registrados.</div>';
             return;
         }
-
-        tiquetes.forEach(t => {
-            let div = document.createElement('div');
+        tiquetes.slice().reverse().slice(0, 10).forEach(t => {
+            const inicial = t.agente ? t.agente.charAt(0) : '?';
+            const texto = t.diag ? t.diag.substring(0, 32) + (t.diag.length > 32 ? '...' : '') : 'Incidente';
+            const div = document.createElement('div');
             div.className = 'ticket-item';
             div.innerHTML = `
                 <div class="user-info">
-                    <div style="width: 38px; height: 38px; border-radius: 50%; background-color: #2563eb; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
-                        ${t.agente ? t.agente.charAt(0) : 'J'}
-                    </div>
-                    <span class="user-email" style="text-transform: capitalize;">${t.diag ? t.diag.substring(0, 28) : 'Incidente'}...</span>
+                    <div style="width:38px; height:38px; border-radius:50%; background-color:#2563eb; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">${escapar(inicial)}</div>
+                    <span class="user-email">${escapar(texto)}</span>
                 </div>
-                <div class="ticket-time">${t.id}<br><span style="color:#2563eb; font-weight:bold;">${t.crit}</span></div>
-            `;
+                <div class="ticket-time">${escapar(t.id)}<br><span class="crit-${escapar(t.crit)}">${escapar(t.crit || '')}</span> · ${escapar(t.estado || '')}</div>`;
             contenedor.appendChild(div);
         });
     }
 
-    renderizarDashboard();
-    
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'tfm_tiquetes') renderizarDashboard();
-    });
+    function marcarEstado(ok, texto) {
+        document.getElementById('statusDot').className = 'status-dot ' + (ok ? 'ok' : 'error');
+        document.getElementById('statusText').textContent = texto;
+    }
+
+    // ================== CARGA DE DATOS DESDE n8n ==================
+    async function cargarDatos() {
+        try {
+            const resp = await fetch(API_URL, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const filas = await resp.json();
+            const lista = Array.isArray(filas) ? filas : [];
+
+            const tiquetes = lista.map(f => ({
+                id: limpiar(f['ID Tiquete']),
+                diag: limpiar(f['Resumen']) || limpiar(f['Diagnóstico IA']),
+                crit: limpiar(f['Criticidad']).toLowerCase(),
+                agente: limpiar(f['Operador Nombre']),
+                estado: limpiar(f['Estado']),
+                categoria: limpiar(f['Categoria'] || f['Categoría']).toLowerCase(),
+                fechaCreacion: limpiar(f['Fecha Creación']),
+                fechaResolucion: limpiar(f['Fecha Resolucion'])
+            })).filter(t => t.id);
+
+            actualizarDashboard(tiquetes);
+            marcarEstado(true, 'Pipeline n8n: Operativo');
+            document.getElementById('ultimaActualizacion').textContent = 'Actualizado ' + new Date().toLocaleTimeString();
+        } catch (e) {
+            console.error('No se pudo leer n8n:', e);
+            marcarEstado(false, 'Pipeline n8n: sin conexión');
+        }
+    }
+
+    crearGraficos();
+    cargarDatos();
+    setInterval(cargarDatos, REFRESCO_MS);
 </script>
 
 </body>
