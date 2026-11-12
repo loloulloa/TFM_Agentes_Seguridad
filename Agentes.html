@@ -8,10 +8,11 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         header { width: 100%; max-width: 1200px; margin-bottom: 25px; border-bottom: 1px solid #1e293b; padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         h1 { color: #38bdf8; font-size: 20px; margin: 0; display: flex; align-items: center; gap: 10px; }
-        .main-container { width: 100%; max-width: 1200px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        .main-container { width: 100%; max-width: 1200px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155; box-sizing: border-box; }
         .team-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .agent-pill { background: #0f172a; border: 1px solid #475569; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #cbd5e1; }
         .agent-pill.active { border-color: #38bdf8; color: #38bdf8; font-weight: 600; }
+        .agent-pill .contador { background: #334155; border-radius: 10px; padding: 1px 7px; margin-left: 6px; font-size: 11px; color: #f8fafc; }
         h2 { color: #f1f5f9; margin-top: 0; margin-bottom: 15px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #0f172a; border-radius: 8px; overflow: hidden; }
         th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
@@ -21,11 +22,15 @@
         .alta { background: #7c2d12; color: #ffedd5; border: 1px solid #9a3412; }
         .media { background: #ca8a04; color: #fefce8; border: 1px solid #eab308; }
         .baja { background: #065f46; color: #a7f3d0; border: 1px solid #047857; }
+        .estado-revision { color: #fbbf24; font-weight: 600; }
         .btn-accion { background-color: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-accion:hover { background-color: #1d4ed8; }
+        .btn-accion:disabled { background-color: #475569; cursor: not-allowed; }
         .nav-links { display: flex; gap: 15px; }
         .nav-link { color: #38bdf8; text-decoration: none; font-size: 14px; font-weight: 600; }
         .nav-link:hover { text-decoration: underline; }
+        .estado-conexion { font-size: 12px; color: #94a3b8; margin-bottom: 10px; }
+        .estado-conexion.error { color: #fca5a5; }
     </style>
 </head>
 <body>
@@ -39,18 +44,12 @@
 </header>
 
 <div class="main-container">
-    <h2>👥 Equipo de Soporte Activo (6 Especialistas Sincronizados)</h2>
-    <div class="team-bar">
-        <div class="agent-pill active">👑 Jorge Ulloa (Líder / TFM)</div>
-        <div class="agent-pill">🔧 Carlos Méndez (Infraestructura)</div>
-        <div class="agent-pill">💻 María Brenes (Desarrollo Tier 2)</div>
-        <div class="agent-pill">📊 Esteban Rojas (Base de Datos)</div>
-        <div class="agent-pill">🛡️ Ana Lucía Gómez (Seguridad / GRC)</div>
-        <div class="agent-pill">⚡ Roberto Salas (Redes y Comunicaciones)</div>
-    </div>
+    <h2>👥 Equipo de Soporte Activo (6 Especialistas)</h2>
+    <div class="team-bar" id="barraEquipo"></div>
 
     <h2>📋 Trazabilidad y Asignación de Tiquetes en Tiempo Real</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Monitoreo dinámico de cargas de trabajo distribuidas entre los 6 especialistas.</p>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 5px;">Tiquetes activos (abiertos o en revisión manual) distribuidos entre los 6 especialistas.</p>
+    <div class="estado-conexion" id="estadoConexion">Conectando con n8n...</div>
 
     <table>
         <thead>
@@ -59,68 +58,151 @@
                 <th>Diagnóstico del Incidente</th>
                 <th>Criticidad</th>
                 <th>Especialista Asignado</th>
+                <th>Estado</th>
                 <th>Fecha de Creación</th>
                 <th>Acciones Operativas</th>
             </tr>
         </thead>
-        <tbody id="tablaTiquetes">
-            <!-- Dinámico -->
-        </tbody>
+        <tbody id="tablaTiquetes"></tbody>
     </table>
 </div>
 
 <script>
+    // ================== CONFIGURACIÓN ==================
+    const BASE_URL = 'https://conjuror-roman-ambitious.ngrok-free.dev/webhook';
+    const API_TICKETS = BASE_URL + '/tickets';        // workflow de Lectura
+    const API_CERRAR = BASE_URL + '/cerrar-ticket';   // workflow de Cierre (por crear)
+    const HEADERS_NGROK = { 'ngrok-skip-browser-warning': 'true' };
+    const REFRESCO_MS = 30000;
+
+    const EQUIPO = [
+        { nombre: 'Jorge Ulloa', rol: 'Líder / TFM', icono: '👑' },
+        { nombre: 'Carlos Méndez', rol: 'Infraestructura', icono: '🔧' },
+        { nombre: 'María Brenes', rol: 'Desarrollo Tier 2', icono: '💻' },
+        { nombre: 'Esteban Rojas', rol: 'Base de Datos', icono: '📊' },
+        { nombre: 'Ana Lucía Gómez', rol: 'Seguridad / GRC', icono: '🛡️' },
+        { nombre: 'Roberto Salas', rol: 'Redes y Comunicaciones', icono: '⚡' }
+    ];
+
+    let tiquetes = [];
+
+    // ================== UTILIDADES ==================
+    const limpiar = v => (v === undefined || v === null) ? '' : String(v).replace(/[\t\r\n]+/g, ' ').trim();
+    const escapar = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function formatearFecha(iso) {
+        const d = new Date(iso);
+        if (isNaN(d)) return iso || '';
+        return d.toLocaleString('es-CR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    // ================== RENDERIZADO ==================
+    function renderEquipo() {
+        const barra = document.getElementById('barraEquipo');
+        barra.innerHTML = '';
+        EQUIPO.forEach((e, i) => {
+            const carga = tiquetes.filter(t => t.agente === e.nombre).length;
+            const div = document.createElement('div');
+            div.className = 'agent-pill' + (i === 0 ? ' active' : '');
+            div.innerHTML = `${e.icono} ${escapar(e.nombre)} (${escapar(e.rol)})<span class="contador">${carga}</span>`;
+            barra.appendChild(div);
+        });
+    }
+
     function renderTiquetes() {
         const tbody = document.getElementById('tablaTiquetes');
-        
-        let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes'));
-        if (!tiquetes || tiquetes.length === 0) {
-            tiquetes = [
-                { id: 'TKT-863750', diag: 'Caída masiva del servidor principal de producción', crit: 'Alta', agente: 'Jorge Ulloa', fecha: '2026-09-22 06:08:21' },
-                { id: 'TKT-118371', diag: 'Intermitencia en exportación de reportes PDF', crit: 'Media', agente: 'María Brenes', fecha: '2026-09-22 12:30:15' },
-                { id: 'TKT-398964', diag: 'Solicitud de cambio menor en etiqueta de campo', crit: 'Baja', agente: 'Carlos Méndez', fecha: '2026-09-22 12:30:40' }
-            ];
-            localStorage.setItem('tfm_tiquetes', JSON.stringify(tiquetes));
+        tbody.innerHTML = '';
+
+        if (tiquetes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay tiquetes activos.</td></tr>';
+            return;
         }
 
-        tbody.innerHTML = '';
-        tiquetes.forEach(t => {
-            let critLower = (t.crit || 'baja').toLowerCase();
-            let badgeClass = critLower.includes('alta') ? 'alta' : (critLower.includes('media') ? 'media' : 'baja');
-            let critText = critLower.includes('alta') ? 'Alta' : (critLower.includes('media') ? 'Media' : 'Baja');
+        tiquetes.slice().reverse().forEach(t => {
+            const badge = t.crit === 'alta' ? 'alta' : (t.crit === 'media' ? 'media' : 'baja');
+            const critTexto = badge.charAt(0).toUpperCase() + badge.slice(1);
+            const estadoClase = t.estado === 'Revisión manual' ? 'estado-revision' : '';
 
-            let tr = document.createElement('tr');
+            const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${t.id}</strong></td>
-                <td>${t.diag}</td>
-                <td><span class="badge ${badgeClass}">${critText}</span></td>
-                <td>${t.agente}</td>
-                <td>${t.fecha}</td>
-                <td><button class="btn-accion" onclick="cerrarTiquete('${t.id}')">Cerrar y Enviar Correo</button></td>
-            `;
+                <td><strong>${escapar(t.id)}</strong></td>
+                <td>${escapar(t.diag)}</td>
+                <td><span class="badge ${badge}">${critTexto}</span></td>
+                <td>${escapar(t.agente)}</td>
+                <td class="${estadoClase}">${escapar(t.estado)}</td>
+                <td>${escapar(formatearFecha(t.fecha))}</td>
+                <td><button class="btn-accion" data-id="${escapar(t.id)}">Cerrar y Enviar Correo</button></td>`;
             tbody.appendChild(tr);
         });
-    }
 
-    async function cerrarTiquete(idTiquete, emailUsuario) {
-    if (!confirm("¿Deseas cerrar el tiquete " + idTiquete + " y notificar al cliente por correo?")) return;
-
-    // 1. Eliminar del localStorage local
-    let tiquetes = JSON.parse(localStorage.getItem('tfm_tiquetes')) || [];
-    tiquetes = tiquetes.filter(t => t.id !== idTiquete);
-    localStorage.setItem('tfm_tiquetes', JSON.stringify(tiquetes));
-    renderTiquetes();
-
-    // 2. Disparar Webhook hacia n8n para enviar el correo de cierre vía Gmail
-    try {
-        await fetch('http://localhost:5678/webhook/cerrar-ticket', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: idTiquete, status: "Resuelto / Cerrado" })
+        tbody.querySelectorAll('.btn-accion').forEach(btn => {
+            btn.addEventListener('click', () => cerrarTiquete(btn.dataset.id, btn));
         });
-        alert("¡Tiquete " + idTiquete + " cerrado y correo de notificación enviado con éxito!");
-    } catch (err) {
-        console.log("Aviso de red n8n (Cierre):", err);
-        alert("Tiquete cerrado localmente, but the n8n webhook notification failed.");
     }
-}
+
+    function mostrarConexion(ok, texto) {
+        const el = document.getElementById('estadoConexion');
+        el.textContent = texto;
+        el.className = 'estado-conexion' + (ok ? '' : ' error');
+    }
+
+    // ================== LECTURA DESDE n8n ==================
+    async function cargarTiquetes() {
+        try {
+            const resp = await fetch(API_TICKETS, { headers: HEADERS_NGROK });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const filas = await resp.json();
+            const lista = Array.isArray(filas) ? filas : [];
+
+            tiquetes = lista.map(f => ({
+                id: limpiar(f['ID Tiquete']),
+                diag: limpiar(f['Resumen']) || limpiar(f['Diagnóstico IA']),
+                crit: limpiar(f['Criticidad']).toLowerCase(),
+                agente: limpiar(f['Operador Nombre']),
+                estado: limpiar(f['Estado']),
+                fecha: limpiar(f['Fecha Creación']),
+                correo: limpiar(f['Correo Cliente'])
+            })).filter(t => t.id && t.estado !== 'Resuelto');
+
+            renderEquipo();
+            renderTiquetes();
+            mostrarConexion(true, 'Sincronizado con n8n · ' + new Date().toLocaleTimeString());
+        } catch (e) {
+            console.error('No se pudo leer n8n:', e);
+            mostrarConexion(false, 'Sin conexión con n8n. Verifica ngrok y el workflow de Lectura.');
+        }
+    }
+
+    // ================== CIERRE DE TIQUETE ==================
+    async function cerrarTiquete(idTiquete, boton) {
+        const t = tiquetes.find(x => x.id === idTiquete);
+        if (!t) return;
+        if (!confirm('¿Deseas cerrar el tiquete ' + idTiquete + ' y notificar al cliente por correo?')) return;
+
+        boton.disabled = true;
+        boton.textContent = 'Cerrando...';
+
+        try {
+            const resp = await fetch(API_CERRAR, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...HEADERS_NGROK },
+                body: JSON.stringify({ id: idTiquete, correo: t.correo })
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            alert('Tiquete ' + idTiquete + ' cerrado. Se notificó al cliente.');
+            await cargarTiquetes();
+        } catch (err) {
+            console.error('Error al cerrar:', err);
+            alert('No se pudo cerrar el tiquete ' + idTiquete + '. El workflow de cierre en n8n no respondió.');
+            boton.disabled = false;
+            boton.textContent = 'Cerrar y Enviar Correo';
+        }
+    }
+
+    renderEquipo();
+    cargarTiquetes();
+    setInterval(cargarTiquetes, REFRESCO_MS);
+</script>
+
+</body>
+</html>

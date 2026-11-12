@@ -1,0 +1,21 @@
+id,mensaje,categoria_asignada,criticidad_asignada,especialista_asignado,segundos_triaje_manual
+T01,"La impresora de recepcion no imprime desde esta manana, 3 personas esperan documentos.",hardware,alta,Carlos meendez ,38:03:00
+T02,"No me deja entrar al sistema de inventario, dice contrasena incorrecta. Soy solo yo, desde hace 20 minutos.",software,media ,Maria Brenes ,43:22:00
+T03,"Internet muy lento en toda la oficina desde las 9, unas 10 personas afectadas.",redes,alta,Roberto Salas ,25:42:00
+T04,"El correo corporativo no envia mensajes con adjuntos grandes, pasa hace 2 dias a todo el equipo de ventas (8 personas).",software ,alta,Maria Brenes ,29:65
+T05,Mi laptop se calienta mucho y se apaga sola. Hoy ya se apago 3 veces.,hardware,baja,Carlos meendez ,24:43:00
+T06,"Recibimos un correo pidiendo transferir dinero urgente a nombre del gerente, parece falso. 2 personas ya respondieron.",seguridad,baja,Ana Lucia Gomez,35:91
+T07,Necesito acceso a la carpeta compartida de contabilidad para la nueva auxiliar.,seguridad,baja,Ana Lucia Gomez,27:33:00
+T08,La base de datos de clientes muestra registros duplicados desde la actualizacion de ayer. Afecta a 4 usuarios de ventas.,base de datos ,media ,Esteban Rojas ,31:89
+T09,El proyector de la sala 2 no reconoce el cable HDMI. Tenemos reunion con un cliente en 1 hora.,otro,media ,Jorge Ulloa ,14:13
+T10,Como cambio el idioma de Outlook a espanol?,otro,baja ,Jorge Ulloa ,17:22
+T11,"El sistema de facturacion se cae cada vez que se genera una nota de credito, 5 personas de contabilidad no pueden trabajar desde hace 1 hora.",software,alta,Maria Brenes ,27:28:00
+T12,"No funciona la VPN desde mi casa desde ayer, solo me pasa a mi.",redes,baja,Roberto Salas ,12:14
+T13,"El servidor de correo no responde, nadie recibe ni envia mensajes desde hace 40 minutos. Somos 30 usuarios.",hardware,alta,Carlos meendez ,21:55
+T14,Quiero reportar que deje mi laptop de trabajo en un taxi anoche con informacion de clientes.,seguridad,media ,Ana Lucia Gomez,28:18:00
+T15,"El teclado de mi equipo tiene varias teclas que no responden, puedo usar uno externo mientras tanto.",hardware,baja,Carlos meendez ,22:22
+T16,"La app de reportes tarda mucho en generar el informe mensual, pero termina. Afecta a 2 analistas.",software,media ,Maria Brenes ,28:41:00
+T17,"No tengo wifi en el piso 3, hay 12 personas sin conexion desde hace 25 minutos.",redes,alta,Roberto Salas ,19:24
+T18,"Necesito instalar Visual Studio Code en mi equipo, mi jefe ya lo aprobo.",software,baja,Maria Brenes ,23:23:00
+T19,Se borro por error una tabla de la base de datos de pedidos y 6 usuarios no pueden registrar ventas desde hace 1 hora.,base de datos ,alta,Esteban Rojas ,21:45
+T20,Mi sistema no funciona y es urgente.,software,media ,Maria Brenes ,22:22:00

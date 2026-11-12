@@ -621,3 +621,40 @@
 - Incidencia: tabulador (\t) en Categoria y Errores Validacion; se reescribieron los encabezados sin tilde (Categoria, Errores Validacion).
 - Incidencia: al cambiar encabezados, el nodo Sheets Append dejó esos dos campos en blanco; se reasignaron las expresiones.
 - Prueba ticket 4588: fila registrada con categoria=redes, operador=Roberto Salas, estado=Abierto.
+## [2026-11-04] Lectura validada
+- GET /webhook-test/tickets devuelve JSON limpio desde Prueba_TFM (sin tabuladores).
+- Campos con nombres de la hoja: "ID Tiquete", "Operador Nombre", "Categoria", "Errores Validacion", etc.
+## [2026-11-04] Workflow de lectura publicado
+- Production URL: GET /webhook/tickets responde JSON desde Prueba_TFM sin intervención manual.
+- CORS abierto (*) para desarrollo; en producción se restringiría al dominio del portal.
+- Los campos conservan los nombres de la hoja ("ID Tiquete", "Operador Nombre", "Categoria"...).
+## [2026-11-09] Dashboard conectado a datos reales
+- dashboard.html lee GET /webhook/tickets (workflow de Lectura) con cabecera ngrok-skip-browser-warning.
+- Gráficos de estado, carga por especialista, criticidad y categoría calculados desde Google Sheets; refresco cada 30 s.
+- KPI de automatización = tickets sin revisión manual / total. Tiempo de resolución: N/D hasta implementar el flujo de resuelto.
+- Incidencia: bloque pegado fuera de <script> (se mostraba como texto); resuelto reemplazando el archivo completo.
+## [2026-11-09] Pipeline en producción validado
+- Workflow de ingesta publicado (/webhook/ticket-soporte). Script PowerShell envió 6 tickets (5001-5006).
+- Resultado: 6 filas en Sheets con categorías y especialistas correctos; ticket 5006 sin correo -> Revisión manual (confianza 0.7).
+- Dashboard: 7 tickets, automatización 85.7%, gráficos con datos reales.
+- Gmail: correo de confirmación recibido para tickets con correo válido.
+## [2026-11-09] Portal conectado y robustez ante fallos
+- index.html envía { correo, mensaje } a /webhook/ticket-soporte (producción) con CORS abierto.
+- Incidencia: ejecución #135 falló en Telegram Alerta Crítica ("connection closed unexpectedly") y detuvo Gmail y Sheets; ticket recuperado con Retry.
+- Mejora: Retry On Fail (3 intentos) y On Error = Continue en los nodos de Telegram, para que una alerta caída no pierda el ticket.
+## [2026-11-09] Consola de agentes conectada
+- agentes.html lee GET /webhook/tickets; muestra solo tiquetes activos (no Resuelto), carga por especialista y estado.
+- Eliminados los tiquetes de ejemplo y el borrado local. El botón de cierre llamará a /webhook/cerrar-ticket (workflow de Cierre).
+- Añadida columna "Fecha Resolucion" (N) en la hoja para calcular el tiempo de resolución.
+## [2026-11-09] Flujo de cierre de tiquetes validado
+- Workflow "Cierre": Webhook POST /cerrar-ticket -> Google Sheets (Update Row por ID Tiquete: Estado=Resuelto, Fecha Resolucion=ahora) -> Gmail (correo de resuelto) -> Respond to Webhook.
+- Prueba con TKT-1794270146722 desde agentes.html: estado Resuelto, Fecha Creación intacta, correo recibido.
+- Incidencias de configuración: "(Expression)" y "(texto fijo)" copiados como valor; fecha mapeada primero a Fecha Creación (corregido antes de ejecutar).
+## [2026-11-09] Evaluación del agente de triaje (dataset de 30 tickets)
+- Workflow "Evaluacion" (sin notificaciones) escribe en pestaña Evaluacion; 30 tickets enviados con script PowerShell.
+- Resultado: categoría 30/30 (100%), criticidad 28/30 (93.3%). Recall de criticidad alta: 15/15.
+- Errores: E08 (esperada media, obtenida alta; criterio ambiguo ante solución alternativa) y E24 (esperada media, obtenida baja).
+- Observación: ambos errores con confianza >= 0.85; el umbral de 0.8 no los marca para revisión humana.
+- Incidencia: 3 envíos (E07, E11, E13) no llegaron a la hoja en la primera pasada; reenviados. Causa no determinada.
+- Limitaciones: n=30, etiquetas elaboradas con apoyo de IA, una sola corrida, mensajes mayormente explícitos.
+- Archivos: dataset_evaluacion.csv, Prueba_TFM - Evaluacion.tsv, comparacion_resultados.csv.
