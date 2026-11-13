@@ -1,0 +1,284 @@
+{
+  "name": "TFM - OmniAgent Ops (Evaluacion)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "evaluacion",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        -288
+      ],
+      "id": "38d582da-73c1-42d9-a085-8dbeb6da6a55",
+      "name": "Webhook Ingesta Web",
+      "webhookId": "e56aa351-002a-4063-aefd-a3192dde262f"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.mensaje }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Eres un agente de triaje de tickets de soporte técnico. Recibes el mensaje de un cliente y devuelves únicamente el JSON solicitado.\n\nCATEGORÍA (elige una):\n- redes: conectividad, internet, VPN, wifi, switches, routers, caída de red.\n- software: aplicaciones, sistemas, accesos de usuario, errores de programas, facturación, portales.\n- hardware: equipos físicos, computadoras, impresoras, servidores, periféricos.\n- base_datos: bases de datos, consultas lentas, caídas del motor, datos corruptos o faltantes, respaldos.\n- seguridad: accesos no autorizados, phishing, malware, contraseñas comprometidas, fugas de datos, incumplimientos de políticas.\n- otro: cualquier cosa que no encaje claramente en las anteriores.\n\nCRITICIDAD:\n- alta: el problema (de redes, software o hardware) afecta a 1 o más usuarios durante más de 30 minutos.\n- media: afecta a usuarios pero hay una solución temporal, o el impacto es parcial.\n- baja: consultas, dudas o problemas sin impacto en el trabajo.\n\nREGLAS DE CRITICIDAD (tienen prioridad sobre la definición anterior):\nA. Si el cliente menciona una solución temporal o alternativa que le permite seguir trabajando (otra herramienta, otro equipo, otra vía), la criticidad es \"media\", aunque el problema dure más de 30 minutos.\nB. En seguridad: un incidente solo sospechado, sin impacto confirmado (por ejemplo, un correo de phishing recibido sin que nadie haya respondido, hecho clic ni entregado datos), es \"media\" para que alguien lo revise. Si hay impacto confirmado (alguien respondió, hizo clic, entregó credenciales, hubo acceso no autorizado o fuga de datos), es \"alta\". Una duda o consulta general sobre seguridad es \"baja\".\n\nREGLAS PARA DATOS FALTANTES:\n1. Si el mensaje NO indica cuántos usuarios están afectados, escribe \"no_encontrado\". Nunca asumas un número.\n2. Si el mensaje NO indica cuánto dura el problema, escribe \"no_encontrado\" en duracion_minutos. Solo convierte a minutos cuando el mensaje dé una duración explícita (por ejemplo, \"2 horas\" = 120).\n3. Si falta la duración pero el cliente expresa urgencia clara (\"no podemos trabajar\", \"clientes esperando\"), asigna criticidad \"alta\" y baja el confidence a 0.7 o menos, para que una persona lo revise.\n\nOTRAS REGLAS:\n- diagnostico: una frase con la causa probable. Si no hay información suficiente, escribe \"causa no determinada\".\n- resumen: máximo 2 oraciones.\n- confidence (0 a 1): baja el valor si el mensaje es ambiguo, está incompleto o la categoría no es clara. Usa 0.9 o más solo cuando todo es explícito.\n- Nunca inventes datos que no estén en el mensaje."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -752,
+        -288
+      ],
+      "id": "19825ad9-6e60-4e70-a79e-76e7eaacaef1",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Leer la salida estructurada del LLM\nconst llm = $input.first().json.output || {};\nconst webhook = $node[\"Webhook Ingesta Web\"]?.json?.body || {};\n\n// 2. Tabla de especialistas (regla de negocio, NO la decide la IA)\nconst especialistas = {\n  redes: \"Roberto Salas\",\n  software: \"María Brenes\",\n  hardware: \"Carlos Méndez\",\n  base_datos: \"Esteban Rojas\",\n  seguridad: \"Ana Lucía Gómez\",\n  otro: \"Jorge Ulloa\"\n};\n\n// 3. Asignación fija: una categoría = un especialista\nconst operador = especialistas[llm.categoria] || especialistas[\"otro\"];\n\n// 4. Validaciones\nconst errores = [];\nconst categoriasOk = [\"redes\", \"software\", \"hardware\", \"base_datos\", \"seguridad\", \"otro\"];\nconst criticidadOk = [\"alta\", \"media\", \"baja\"];\n\nif (!categoriasOk.includes(llm.categoria)) errores.push(\"categoria invalida\");\nif (!criticidadOk.includes(llm.criticidad)) errores.push(\"criticidad invalida\");\nif (typeof llm.confidence !== \"number\") errores.push(\"confidence ausente\");\nif (!llm.resumen) errores.push(\"resumen ausente\");\n\nconst correo = webhook.correo || webhook.email || \"\";\nconst correoValido = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(correo);\nif (!correoValido) errores.push(\"correo del cliente ausente o invalido\");\n\nconst valido = errores.length === 0;\n\n// 5. Salida normalizada\nreturn [{\n  json: {\n    id_tiquete: \"TKT-\" + Date.now(),\n    correo: correoValido ? correo : \"\",\n    mensaje_original: webhook.mensaje || \"\",\n    categoria: llm.categoria || \"otro\",\n    criticidad: llm.criticidad || \"media\",\n    motivo_criticidad: llm.motivo_criticidad || \"\",\n    usuarios_afectados: llm.usuarios_afectados || \"no_encontrado\",\n    duracion_minutos: llm.duracion_minutos || \"no_encontrado\",\n    diagnostico: llm.diagnostico || \"causa no determinada\",\n    resumen: llm.resumen || \"\",\n    confidence: typeof llm.confidence === \"number\" ? llm.confidence : 0,\n    operador: operador,\n    estado: valido ? \"Abierto\" : \"Revisión manual\",\n    valido: valido,\n    errores_validacion: errores.join(\"; \"),\n    fecha_creacion: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -288
+      ],
+      "id": "0434f1cb-90a9-42f8-8557-11c8e7eb658a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw",
+          "mode": "list",
+          "cachedResultName": "Prueba_TFM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 687775780,
+          "mode": "list",
+          "cachedResultName": "Evaluacion",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw/edit#gid=687775780"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Tiquete": "={{ $json.id_tiquete }}",
+            "Criticidad": "={{ $json.criticidad }}",
+            "Operador Nombre": "={{ $json.operador }}",
+            "Confianza": "={{ $json.confidence }}",
+            "Categoria": "={{ $json.categoria }}",
+            "Mensaje": "={{ $json.mensaje_original }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Tiquete",
+              "displayName": "ID Tiquete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mensaje",
+              "displayName": "Mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Criticidad",
+              "displayName": "Criticidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Confianza",
+              "displayName": "Confianza",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Operador Nombre",
+              "displayName": "Operador Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        -288
+      ],
+      "id": "9a1e8168-4a41-4064-8b1b-ab363ff58ee6",
+      "name": "Google Sheets Append",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1kWAANgx2SL5CIUR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -752,
+        192
+      ],
+      "id": "78127e1d-7a70-4528-ab03-72d717b52595",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "SOMqOctZk1miyuTR",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"categoria\": {\n      \"type\": \"string\",\n      \"enum\": [\"redes\", \"software\", \"hardware\", \"base_datos\", \"seguridad\", \"otro\"],\n      \"description\": \"Área técnica a la que pertenece el problema reportado\"\n    },\n    \"criticidad\": {\n      \"type\": \"string\",\n      \"enum\": [\"alta\", \"media\", \"baja\"],\n      \"description\": \"Nivel de urgencia según el impacto reportado\"\n    },\n    \"motivo_criticidad\": {\n      \"type\": \"string\",\n      \"description\": \"Frase corta que justifica la criticidad asignada\"\n    },\n    \"usuarios_afectados\": {\n      \"type\": \"string\",\n      \"description\": \"Cantidad de usuarios afectados según el mensaje, o 'no_encontrado'\"\n    },\n    \"duracion_minutos\": {\n      \"type\": \"string\",\n      \"description\": \"Duración del problema en minutos según el mensaje, o 'no_encontrado'\"\n    },\n    \"diagnostico\": {\n      \"type\": \"string\",\n      \"description\": \"Causa probable del problema en una frase\"\n    },\n    \"resumen\": {\n      \"type\": \"string\",\n      \"description\": \"Resumen del ticket en máximo 2 oraciones\"\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"description\": \"Confianza global entre 0 y 1\"\n    }\n  },\n  \"required\": [\"categoria\", \"criticidad\", \"motivo_criticidad\", \"usuarios_afectados\", \"duracion_minutos\", \"diagnostico\", \"resumen\", \"confidence\"]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -576,
+        96
+      ],
+      "id": "b2a9202b-9fc7-4844-91d9-f8a3b906b49f",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Ingesta Web": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "add914a7-7480-4c34-99c3-ce5bc95cd43e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a92dec468d65d0c2269993ee0bd611d9d95fe1b1f461015934f15c28e323037"
+  },
+  "nodeGroups": [],
+  "id": "7JaUFdNlIZyHx33z",
+  "tags": []
+}

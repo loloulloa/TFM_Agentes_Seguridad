@@ -1,0 +1,549 @@
+{
+  "name": "TFM - OmniAgent Ops (Tickets IT)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ticket-soporte",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        -288
+      ],
+      "id": "72c74d03-f8bd-464f-a4b6-91802cfac325",
+      "name": "Webhook Ingesta Web",
+      "webhookId": "953f75dd-3fcd-4865-9b4d-bc23553bbf38"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.mensaje }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Eres un agente de triaje de tickets de soporte técnico. Recibes el mensaje de un cliente y devuelves únicamente el JSON solicitado.\n\nCATEGORÍA (elige una):\n- redes: conectividad, internet, VPN, wifi, switches, routers, caída de red.\n- software: aplicaciones, sistemas, accesos de usuario, errores de programas, facturación, portales.\n- hardware: equipos físicos, computadoras, impresoras, servidores, periféricos.\n- base_datos: bases de datos, consultas lentas, caídas del motor, datos corruptos o faltantes, respaldos.\n- seguridad: accesos no autorizados, phishing, malware, contraseñas comprometidas, fugas de datos, incumplimientos de políticas.\n- otro: cualquier cosa que no encaje claramente en las anteriores.\n\nCRITICIDAD:\n- alta: el problema (de redes, software o hardware) afecta a 1 o más usuarios durante más de 30 minutos.\n- media: afecta a usuarios pero hay una solución temporal, o el impacto es parcial.\n- baja: consultas, dudas o problemas sin impacto en el trabajo.\n\nREGLAS DE CRITICIDAD (tienen prioridad sobre la definición anterior):\nA. Si el cliente menciona una solución temporal o alternativa que le permite seguir trabajando (otra herramienta, otro equipo, otra vía), la criticidad es \"media\", aunque el problema dure más de 30 minutos.\nB. En seguridad: un incidente solo sospechado, sin impacto confirmado (por ejemplo, un correo de phishing recibido sin que nadie haya respondido, hecho clic ni entregado datos), es \"media\" para que alguien lo revise. Si hay impacto confirmado (alguien respondió, hizo clic, entregó credenciales, hubo acceso no autorizado o fuga de datos), es \"alta\". Una duda o consulta general sobre seguridad es \"baja\".\n\nREGLAS PARA DATOS FALTANTES:\n1. Si el mensaje NO indica cuántos usuarios están afectados, escribe \"no_encontrado\". Nunca asumas un número.\n2. Si el mensaje NO indica cuánto dura el problema, escribe \"no_encontrado\" en duracion_minutos. Solo convierte a minutos cuando el mensaje dé una duración explícita (por ejemplo, \"2 horas\" = 120).\n3. Si falta la duración pero el cliente expresa urgencia clara (\"no podemos trabajar\", \"clientes esperando\"), asigna criticidad \"alta\" y baja el confidence a 0.7 o menos, para que una persona lo revise.\n\nOTRAS REGLAS:\n- diagnostico: una frase con la causa probable. Si no hay información suficiente, escribe \"causa no determinada\".\n- resumen: máximo 2 oraciones.\n- confidence (0 a 1): baja el valor si el mensaje es ambiguo, está incompleto o la categoría no es clara. Usa 0.9 o más solo cuando todo es explícito.\n- Nunca inventes datos que no estén en el mensaje."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -752,
+        -288
+      ],
+      "id": "c14c4b21-c921-4da4-8c53-3a560253e197",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Leer la salida estructurada del LLM\nconst llm = $input.first().json.output || {};\nconst webhook = $node[\"Webhook Ingesta Web\"]?.json?.body || {};\n\n// 2. Tabla de especialistas (regla de negocio, NO la decide la IA)\nconst especialistas = {\n  redes: \"Roberto Salas\",\n  software: \"María Brenes\",\n  hardware: \"Carlos Méndez\",\n  base_datos: \"Esteban Rojas\",\n  seguridad: \"Ana Lucía Gómez\",\n  otro: \"Jorge Ulloa\"\n};\n\n// 3. Asignación fija: una categoría = un especialista\nconst operador = especialistas[llm.categoria] || especialistas[\"otro\"];\n\n// 4. Validaciones\nconst errores = [];\nconst categoriasOk = [\"redes\", \"software\", \"hardware\", \"base_datos\", \"seguridad\", \"otro\"];\nconst criticidadOk = [\"alta\", \"media\", \"baja\"];\n\nif (!categoriasOk.includes(llm.categoria)) errores.push(\"categoria invalida\");\nif (!criticidadOk.includes(llm.criticidad)) errores.push(\"criticidad invalida\");\nif (typeof llm.confidence !== \"number\") errores.push(\"confidence ausente\");\nif (!llm.resumen) errores.push(\"resumen ausente\");\n\nconst correo = webhook.correo || webhook.email || \"\";\nconst correoValido = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(correo);\nif (!correoValido) errores.push(\"correo del cliente ausente o invalido\");\n\nconst valido = errores.length === 0;\n\n// 5. Salida normalizada\nreturn [{\n  json: {\n    id_tiquete: \"TKT-\" + Date.now(),\n    correo: correoValido ? correo : \"\",\n    mensaje_original: webhook.mensaje || \"\",\n    categoria: llm.categoria || \"otro\",\n    criticidad: llm.criticidad || \"media\",\n    motivo_criticidad: llm.motivo_criticidad || \"\",\n    usuarios_afectados: llm.usuarios_afectados || \"no_encontrado\",\n    duracion_minutos: llm.duracion_minutos || \"no_encontrado\",\n    diagnostico: llm.diagnostico || \"causa no determinada\",\n    resumen: llm.resumen || \"\",\n    confidence: typeof llm.confidence === \"number\" ? llm.confidence : 0,\n    operador: operador,\n    estado: valido ? \"Abierto\" : \"Revisión manual\",\n    valido: valido,\n    errores_validacion: errores.join(\"; \"),\n    fecha_creacion: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -288
+      ],
+      "id": "14e6d784-cddb-46b5-9da8-60d7cdef7af9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.criticidad }}",
+              "value2": "alta"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -288
+      ],
+      "id": "7ef344d2-eb93-4e57-97e4-1d2c0e53e819",
+      "name": "If1 (Criticidad Alta)"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.correo }}",
+        "subject": "=Ticket {{ $json.id_tiquete }} recibido - Soporte IT",
+        "message": "=<p>Hola,</p>\n<p>Hemos recibido tu solicitud de soporte. Puedes darle seguimiento con el número <b>{{ $json.id_tiquete }}</b>.</p>\n<ul>\n  <li><b>Categoría:</b> {{ $json.categoria }}</li>\n  <li><b>Criticidad:</b> {{ $json.criticidad }}</li>\n  <li><b>Estado:</b> {{ $json.estado }}</li>\n  <li><b>Atendido por:</b> {{ $json.operador }}</li>\n  <li><b>Diagnóstico preliminar:</b> {{ $json.diagnostico }}</li>\n</ul>\n<p>Te avisaremos por este medio cuando el problema esté resuelto.</p>\n<p>Atentamente,<br>Equipo de Soporte IT</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        432,
+        -288
+      ],
+      "id": "eed687b1-126a-4773-9c3b-e1c42fe36857",
+      "name": "Gmail Notificación Cliente",
+      "webhookId": "637d4c1f-bd99-4ef8-a748-bb0754509299",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vqMIgQelFqjJHZHj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw",
+          "mode": "list",
+          "cachedResultName": "Prueba_TFM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Tiquete": "={{ $json.id_tiquete }}",
+            "Correo Cliente": "={{ $json.correo }}",
+            "Diagnóstico IA": "={{ $json.diagnostico }}",
+            "Criticidad": "={{ $json.criticidad }}",
+            "Operador Nombre": "={{ $json.operador }}",
+            "Estado": "={{ $json.estado }}",
+            "Fecha Creación": "={{ $json.fecha_creacion }}",
+            "Confianza": "={{ $json.confidence }}",
+            "Usuarios Afectados": "={{ $json.usuarios_afectados }}",
+            "Duración Min": "={{ $json.duracion_minutos }}",
+            "Resumen": "={{ $json.resumen }}",
+            "Categoria": "={{ $json.categoria }}",
+            "Errores Validacion": "={{ $json.errores_validacion }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Tiquete",
+              "displayName": "ID Tiquete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Correo Cliente",
+              "displayName": "Correo Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Diagnóstico IA",
+              "displayName": "Diagnóstico IA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Criticidad",
+              "displayName": "Criticidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Operador Nombre",
+              "displayName": "Operador Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha Creación",
+              "displayName": "Fecha Creación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Confianza",
+              "displayName": "Confianza",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Usuarios Afectados",
+              "displayName": "Usuarios Afectados",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Duración Min",
+              "displayName": "Duración Min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Resumen",
+              "displayName": "Resumen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Errores Validacion",
+              "displayName": "Errores Validacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "d1f333c2-f04a-44f8-a838-cb32ea5d1d19",
+      "name": "Google Sheets Append",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1kWAANgx2SL5CIUR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -752,
+        192
+      ],
+      "id": "79716fa2-1363-4abb-9111-ed1df4b61e83",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "SOMqOctZk1miyuTR",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"categoria\": {\n      \"type\": \"string\",\n      \"enum\": [\"redes\", \"software\", \"hardware\", \"base_datos\", \"seguridad\", \"otro\"],\n      \"description\": \"Área técnica a la que pertenece el problema reportado\"\n    },\n    \"criticidad\": {\n      \"type\": \"string\",\n      \"enum\": [\"alta\", \"media\", \"baja\"],\n      \"description\": \"Nivel de urgencia según el impacto reportado\"\n    },\n    \"motivo_criticidad\": {\n      \"type\": \"string\",\n      \"description\": \"Frase corta que justifica la criticidad asignada\"\n    },\n    \"usuarios_afectados\": {\n      \"type\": \"string\",\n      \"description\": \"Cantidad de usuarios afectados según el mensaje, o 'no_encontrado'\"\n    },\n    \"duracion_minutos\": {\n      \"type\": \"string\",\n      \"description\": \"Duración del problema en minutos según el mensaje, o 'no_encontrado'\"\n    },\n    \"diagnostico\": {\n      \"type\": \"string\",\n      \"description\": \"Causa probable del problema en una frase\"\n    },\n    \"resumen\": {\n      \"type\": \"string\",\n      \"description\": \"Resumen del ticket en máximo 2 oraciones\"\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"description\": \"Confianza global entre 0 y 1\"\n    }\n  },\n  \"required\": [\"categoria\", \"criticidad\", \"motivo_criticidad\", \"usuarios_afectados\", \"duracion_minutos\", \"diagnostico\", \"resumen\", \"confidence\"]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -576,
+        96
+      ],
+      "id": "d15591bd-158b-448a-bc74-64e5d8167f93",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "08b06c2c-529f-434d-a40c-87d24918f6d3",
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7d3f6fa0-6210-4c9a-97ab-56743189c597",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.8,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -160,
+        -288
+      ],
+      "id": "177dbbe7-23bd-40b0-acda-45ccb166b25c",
+      "name": "IF0"
+    },
+    {
+      "parameters": {
+        "chatId": "8810631418",
+        "text": "=⚠️ TICKET PARA REVISIÓN HUMANA  ID: {{ $json.id_tiquete }} Categoría: {{ $json.categoria }} Criticidad: {{ $json.criticidad }} Confianza: {{ $json.confidence }} Cliente: {{ $json.correo || 'SIN CORREO' }}  Resumen: {{ $json.resumen }}  Motivo de revisión: {{ $json.errores_validacion || 'Confianza baja' }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "3b6cfafc-dc0e-40f1-b730-b4a39d11c593",
+      "name": "Telegram Revisión Humana",
+      "webhookId": "8c6c2657-b3eb-4dd7-a07f-fd3196068d3f",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "telegramApi": {
+          "id": "GGerBL2hJXHny3jk",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TOKEN_TELEGRAM>/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"8810631418\",\n  \"text\": \"🚨 TICKET CRÍTICO\\n\\nID: {{ $json.id_tiquete }}\\nCategoría: {{ $json.categoria }}\\nUsuarios afectados: {{ $json.usuarios_afectados }}\\nDuración (min): {{ $json.duracion_minutos }}\\nAsignado a: {{ $json.operador }}\\n\\nMotivo: {{ $json.motivo_criticidad }}\\nResumen: {{ $json.resumen }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        288,
+        -496
+      ],
+      "id": "80386a9c-24e1-424c-aef8-82ef437ee083",
+      "name": "Telegram Alerta Crítica",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Ingesta Web": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "IF0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1 (Criticidad Alta)": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail Notificación Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram Alerta Crítica",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail Notificación Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF0": {
+      "main": [
+        [
+          {
+            "node": "If1 (Criticidad Alta)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Revisión Humana",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3fc51e2c-cdf1-4404-b918-16cef23937b9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a92dec468d65d0c2269993ee0bd611d9d95fe1b1f461015934f15c28e323037"
+  },
+  "nodeGroups": [],
+  "id": "uVlVRXrivQacOEe6",
+  "tags": []
+}

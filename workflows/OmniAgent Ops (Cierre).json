@@ -1,0 +1,312 @@
+{
+  "name": "OmniAgent Ops (Cierre)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cerrar-ticket",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -432,
+        -64
+      ],
+      "id": "2a658e02-3930-48cf-aad7-0049056c9d89",
+      "name": "Webhook",
+      "webhookId": "f3df18b8-1660-44f4-9f81-a11e665f6213"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw",
+          "mode": "list",
+          "cachedResultName": "Prueba_TFM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wow61U_YNzJvht8eMALU-rUHugXkCbo0dDUaTvtjVKw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Tiquete": "={{ $json.body.id }}",
+            "Fecha Resolucion": "={{ new Date().toISOString() }}",
+            "Estado": "Resuelto"
+          },
+          "matchingColumns": [
+            "ID Tiquete"
+          ],
+          "schema": [
+            {
+              "id": "ID Tiquete",
+              "displayName": "ID Tiquete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Correo Cliente",
+              "displayName": "Correo Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Diagnóstico IA",
+              "displayName": "Diagnóstico IA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Criticidad",
+              "displayName": "Criticidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Operador Nombre",
+              "displayName": "Operador Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha Creación",
+              "displayName": "Fecha Creación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Confianza",
+              "displayName": "Confianza",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Usuarios Afectados",
+              "displayName": "Usuarios Afectados",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Duración Min",
+              "displayName": "Duración Min",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Resumen",
+              "displayName": "Resumen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Errores Validacion",
+              "displayName": "Errores Validacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha Resolucion",
+              "displayName": "Fecha Resolucion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -208,
+        -64
+      ],
+      "id": "585a2b1d-edea-4d58-82eb-25cd8adf34f1",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1kWAANgx2SL5CIUR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.correo }}",
+        "subject": "=Ticket {{ $('Webhook').item.json.body.id }} resuelto - Soporte IT",
+        "message": "=<p>Hola,</p>\n<p>Tu ticket <b>{{ $('Webhook').item.json.body.id }}</b> ha sido <b>resuelto</b> y el servicio está funcionando.</p>\n<p>Si el problema persiste, responde a este correo o crea un nuevo ticket en el portal de autoservicio.</p>\n<p>Gracias por tu paciencia.<br>Equipo de Soporte IT</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        -64
+      ],
+      "id": "9d4bde4a-e32d-4e8e-824d-2b386f809934",
+      "name": "Send a message",
+      "webhookId": "6db15183-b3bd-44b0-80c6-029f8d1c8c8d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vqMIgQelFqjJHZHj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"ok\": true }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        240,
+        -64
+      ],
+      "id": "674d26c1-b356-4f4f-adad-8df3233e553a",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a1ceb835-bb74-4fbe-8704-8b005b037b58",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a92dec468d65d0c2269993ee0bd611d9d95fe1b1f461015934f15c28e323037"
+  },
+  "nodeGroups": [],
+  "id": "KPgS7Agc4YTIU1qW",
+  "tags": []
+}
